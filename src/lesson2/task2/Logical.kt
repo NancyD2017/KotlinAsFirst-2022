@@ -80,8 +80,9 @@ fun circleInside(
     x1: Double, y1: Double, r1: Double,
     x2: Double, y2: Double, r2: Double
 ): Boolean {
-    if((sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) + r2 == r1) ||
-            (sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) + r1 == r2)) return true
+    val r1BiggerThanr2 = (sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) == r1 - r2)
+    val r2BiggerThanr1 = (sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) == r2 - r1)
+    if ((r1BiggerThanr2 || r2BiggerThanr1) || (r1BiggerThanr2 || r2BiggerThanr1)) return true
     else return false
 }
 

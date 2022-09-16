@@ -183,12 +183,20 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
  * Если пересечения нет, вернуть -1.
  */
 fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int {
+    val firstKindOfSegment = ((a <= d) && (a >= c) && (b >= c) && (b <= d))
+    val secondKindOfSegment = ((c <= b) && (c >= a) && (d <= b) && (d >= a))
+    val thirdKindOfSegment = ((b >= c) && (b <= d))
+    val fourthKindOfSegment = ((a <= d) && (a >= c))
     return when {
-        ((a < d) && (a > c) && (b > c) && (b < d)) -> b - a
-        ((c < b) && (c > a) && (d < b) && (d > a)) -> d - c
+        ((firstKindOfSegment == true) && (b > 0)) -> b - a
+        ((firstKindOfSegment == true) && (b <= 0)) -> Math.abs(a - b)
+        ((secondKindOfSegment == true) && (d > 0)) -> d - c
+        ((secondKindOfSegment == true) && (d <= 0)) -> Math.abs(c - d)
         ((b == c) || (a == d)) -> 0
-        ((b > c) && (b < d)) -> b - c
-        ((a < d) && (a > c)) -> d - a
+        ((thirdKindOfSegment == true) && (b > 0)) -> b - c
+        ((thirdKindOfSegment == true) && (b <= 0)) -> Math.abs(c - b)
+        ((fourthKindOfSegment == true) && (d > 0)) -> d - a
+        ((fourthKindOfSegment == true) && (d <= 0)) -> Math.abs(a - d)
         else -> -1
     }
 }
