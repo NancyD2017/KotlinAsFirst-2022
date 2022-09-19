@@ -22,7 +22,7 @@ fun pointInsideCircle(x: Double, y: Double, x0: Double, y0: Double, r: Double) =
 fun isNumberHappy(number: Int): Boolean {
     val firstPairSum = (number / 1000) + ((number / 100) % 10)
     val secondPairSum = (number % 10) + ((number / 10) % 10)
-    if (firstPairSum == secondPairSum) return true else return false
+    return firstPairSum == secondPairSum
 }
 
 /**
@@ -33,17 +33,10 @@ fun isNumberHappy(number: Int): Boolean {
  * Считать, что ферзи не могут загораживать друг друга.
  */
 fun queenThreatens(x1: Int, y1: Int, x2: Int, y2: Int): Boolean {
-    var space = Int
-    val whether = Int
-    for (space in 1..8) {
-        if ((((x1 == x2 + space) && (y1 == y2 + space)) ||
-                    ((x1 == x2 - space) && (y1 == y2 + space)) ||
-                    ((x1 == x2 + space) && (y1 == y2 - space)) ||
-                    ((x1 == x2 - space) && (y1 == y2 - space)))) return true
-    }
-    if ((x1 == x2) || (y1 == y2)) return true else return false
+    var space1 = x1 - y1
+    var space2 = x1 + y1
+    return (((space1 == x2 - y2) || (space2 == x2 + y2)) || (x1 == x2) || (y1 == y2))
 }
-
 
 /**
  * Простая (2 балла)
@@ -52,21 +45,21 @@ fun queenThreatens(x1: Int, y1: Int, x2: Int, y2: Int): Boolean {
  * Вернуть число дней в этом месяце этого года по григорианскому календарю.
  */
 fun daysInMonth(month: Int, year: Int): Int {
-     return when {
-         (month == 1) -> 31
-         ((month == 2) && ((((year % 4) == 0) && ((year % 100) != 0)) || ((year % 400) == 0)))  -> 29
-         (month == 3) -> 31
-         (month == 4) -> 30
-         (month == 5) -> 31
-         (month == 6) -> 30
-         (month == 7) -> 31
-         (month == 8) -> 31
-         (month == 9) -> 30
-         (month == 10) -> 31
-         (month == 11) -> 30
-         (month == 12) -> 31
-         else -> 28
-     }
+    return when {
+        (month == 1) -> 31
+        ((month == 2) && ((((year % 4) == 0) && ((year % 100) != 0)) || ((year % 400) == 0))) -> 29
+        (month == 3) -> 31
+        (month == 4) -> 30
+        (month == 5) -> 31
+        (month == 6) -> 30
+        (month == 7) -> 31
+        (month == 8) -> 31
+        (month == 9) -> 30
+        (month == 10) -> 31
+        (month == 11) -> 30
+        (month == 12) -> 31
+        else -> 28
+    }
 }
 
 /**
@@ -79,13 +72,7 @@ fun daysInMonth(month: Int, year: Int): Int {
 fun circleInside(
     x1: Double, y1: Double, r1: Double,
     x2: Double, y2: Double, r2: Double
-): Boolean {
-    val r1BiggerThanr2 = (sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) == r1 - r2)
-    val r2BiggerThanr1 = (sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) == r2 - r1)
-    if ((r1BiggerThanr2 || r2BiggerThanr1) || (r1BiggerThanr2 || r2BiggerThanr1)) return true
-    else return false
-}
-
+): Boolean = TODO()
 /**
  * Средняя (3 балла)
  *
@@ -96,8 +83,7 @@ fun circleInside(
  * Вернуть true, если кирпич пройдёт
  */
 fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean {
-    if ((((a <= r) && ((b <= s) || (c <= s))) || ((a <= s) && ((b <= r) || (c <= r)))) ||
+    return (((a <= r) && ((b <= s) || (c <= s))) || ((a <= s) && ((b <= r) || (c <= r)))) ||
             (((b <= r) && ((a <= s) || (c <= s))) || ((b <= s) && ((a <= r) || (c <= r)))) ||
-            (((c <= r) && ((b <= s) || (a <= s))) || ((c <= s) && ((b <= r) || (a <= r))))) return true
-    else return false
+            (((c <= r) && ((b <= s) || (a <= s))) || ((c <= s) && ((b <= r) || (a <= r))))
 }

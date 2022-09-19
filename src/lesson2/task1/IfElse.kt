@@ -3,6 +3,7 @@
 package lesson2.task1
 
 import lesson1.task1.discriminant
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.sqrt
 
@@ -71,12 +72,10 @@ fun minBiRoot(a: Double, b: Double, c: Double): Double {
 fun ageDescription(age: Int): String {
     val firstDigit = age % 10
     val secondDigit = (age / 10) % 10
-    println ("$age")
     return when {
-        (firstDigit == 0) -> "$age лет"
+        ((firstDigit == 0) || (firstDigit in 5..9)) -> "$age лет"
         ((firstDigit == 1) && (secondDigit != 1)) -> "$age год"
         ((firstDigit in 2..4) && (secondDigit != 1)) -> "$age года"
-        (firstDigit in 5..9) -> "$age лет"
         else -> "$age лет"
     }
 }
@@ -96,7 +95,6 @@ fun timeForHalfWay(
     val halfWay = ((v1 * t1) + (v2 * t2) + (v3 * t3)) / 2
     val s1 = v1 * t1
     val s2 = v2 * t2
-    val s3 = v3 * t3
     return when {
         (halfWay < s1) -> halfWay / v1
         (halfWay < (s2 + s1)) -> ((halfWay - s1) / v2) + t1
@@ -118,13 +116,14 @@ fun whichRookThreatens(
     rookX1: Int, rookY1: Int,
     rookX2: Int, rookY2: Int
 ): Int {
-    if (((kingY == rookY2) && (kingY == rookY1)) || ((kingX == rookX2) && (kingX == rookX1)) ||
-        ((kingY == rookY2) && (kingX == rookX1)) || ((kingX == rookX2) && (kingY == rookY1))) return 3
-    if (kingY == rookY1) return 1
-    if (kingY == rookY2) return 2
-    if (kingX == rookX1) return 1
-    if (kingX == rookX2) return 2
-    else return 0
+    return when {
+        (((kingY == rookY2) && (kingY == rookY1)) || ((kingX == rookX2) && (kingX == rookX1)) ||
+                ((kingY == rookY2) && (kingX == rookX1)) || ((kingX == rookX2) && (kingY == rookY1))) -> 3
+
+        ((kingY == rookY1) || (kingX == rookX1)) -> 1
+        ((kingY == rookY2) || (kingX == rookX2)) -> 2
+        else -> 0
+    }
 }
 
 /**
@@ -142,20 +141,11 @@ fun rookOrBishopThreatens(
     rookX: Int, rookY: Int,
     bishopX: Int, bishopY: Int
 ): Int {
-    var space = Int
-    for (space in 1..8) {
-        if ((((kingX == bishopX + space) && (kingY == bishopY + space)) ||
-                    ((kingX == bishopX - space) && (kingY == bishopY + space)) ||
-                    ((kingX == bishopX + space) && (kingY == bishopY - space)) ||
-                    ((kingX == bishopX - space) && (kingY == bishopY - space))) &&
-                    ((kingY == rookY) || (kingX == rookX))) return 3
-        if (((kingX == bishopX + space) && (kingY == bishopY + space)) ||
-                ((kingX == bishopX - space) && (kingY == bishopY + space)) ||
-                ((kingX == bishopX + space) && (kingY == bishopY - space)) ||
-                ((kingX == bishopX - space) && (kingY == bishopY - space))) return 2
-    }
-    if (kingY == rookY) return 1
-    if (kingX == rookX) return 1
+    var space1 = kingX - kingY
+    var space2 = kingY + kingX
+    if (((space1 == bishopX - bishopY) || (space2 == bishopX + bishopY)) && ((kingY == rookY) || (kingX == rookX))) return 3
+    if ((space1 == bishopX - bishopY) || (space2 == bishopX + bishopY)) return 2
+    if ((kingY == rookY) || (kingX == rookX)) return 1
     else return 0
 }
 
@@ -183,20 +173,12 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
  * Если пересечения нет, вернуть -1.
  */
 fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int {
-    val firstKindOfSegment = ((a <= d) && (a >= c) && (b >= c) && (b <= d))
-    val secondKindOfSegment = ((c <= b) && (c >= a) && (d <= b) && (d >= a))
-    val thirdKindOfSegment = ((b >= c) && (b <= d))
-    val fourthKindOfSegment = ((a <= d) && (a >= c))
     return when {
-        ((firstKindOfSegment == true) && (b > 0)) -> b - a
-        ((firstKindOfSegment == true) && (b <= 0)) -> Math.abs(a - b)
-        ((secondKindOfSegment == true) && (d > 0)) -> d - c
-        ((secondKindOfSegment == true) && (d <= 0)) -> Math.abs(c - d)
+        ((a <= d) && (a >= c) && (b >= c) && (b <= d)) -> abs(a - b)
+        ((c <= b) && (c >= a) && (d <= b) && (d >= a)) -> abs(c - d)
         ((b == c) || (a == d)) -> 0
-        ((thirdKindOfSegment == true) && (b > 0)) -> b - c
-        ((thirdKindOfSegment == true) && (b <= 0)) -> Math.abs(c - b)
-        ((fourthKindOfSegment == true) && (d > 0)) -> d - a
-        ((fourthKindOfSegment == true) && (d <= 0)) -> Math.abs(a - d)
+        ((b >= c) && (b <= d)) -> abs(c - b)
+        ((a <= d) && (a >= c)) -> abs(a - d)
         else -> -1
     }
 }
