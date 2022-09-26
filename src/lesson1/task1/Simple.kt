@@ -78,9 +78,8 @@ fun seconds(hours: Int, minutes: Int, seconds: Int): Int {
  * Определить длину того же отрезка в метрах (в данном случае 18.98).
  * 1 сажень = 3 аршина = 48 вершков, 1 вершок = 4.445 см.
  */
-fun lengthInMeters(sagenes: Int, arshins: Int, vershoks: Int): Double {
-    return ((sagenes * 48 + (arshins * 48) / 3 + vershoks) * 4.445) / 100
-}
+fun lengthInMeters(sagenes: Int, arshins: Int, vershoks: Int): Double =
+    ((sagenes * 48 + (arshins * 48) / 3 + vershoks) * 4.445) / 100
 
 /**
  * Тривиальная (1 балл)
@@ -88,9 +87,8 @@ fun lengthInMeters(sagenes: Int, arshins: Int, vershoks: Int): Double {
  * Пользователь задает угол в градусах, минутах и секундах (например, 36 градусов 14 минут 35 секунд).
  * Вывести значение того же угла в радианах (например, 0.63256).
  */
-fun angleInRadian(deg: Int, min: Int, sec: Int): Double {
-    return (deg * 3600 + min * 60 + sec) * PI / (180 * 3600)
-}
+fun angleInRadian(deg: Int, min: Int, sec: Int): Double =
+    (deg * 3600 + min * 60 + sec) * PI / (180 * 3600)
 
 /**
  * Тривиальная (1 балл)
@@ -99,9 +97,9 @@ fun angleInRadian(deg: Int, min: Int, sec: Int): Double {
  * Например, расстояние между (3, 0) и (0, 4) равно 5
  */
 fun trackLength(x1: Double, y1: Double, x2: Double, y2: Double): Double {
-    val cathet1 = abs(x2 - x1)
-    val cathet2 = abs(y2 - y1)
-    return sqrt(cathet1.pow(2) + cathet2.pow(2))
+    val leg1 = abs(x2 - x1)
+    val leg2 = abs(y2 - y1)
+    return sqrt(leg1.pow(2) + leg2.pow(2))
 }
 
 /**
@@ -110,9 +108,7 @@ fun trackLength(x1: Double, y1: Double, x2: Double, y2: Double): Double {
  * Пользователь задает целое число, больше или равно 100 (например, 3801).
  * Определить третью цифру справа в этом числе (в данном случае 8).
  */
-fun thirdDigit(number: Int): Int {
-    return number / 100 % 10
-}
+fun thirdDigit(number: Int): Int = number / 100 % 10
 
 /**
  * Простая (2 балла)

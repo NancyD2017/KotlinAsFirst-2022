@@ -2,6 +2,8 @@
 
 package lesson3.task1
 
+import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.sqrt
 
 // Урок 3: циклы
@@ -72,7 +74,16 @@ fun digitCountInNumber(n: Int, m: Int): Int =
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun digitNumber(n: Int): Int = TODO()
+fun digitNumber(n: Int): Int {
+    var digits = 0
+    var m = n
+    while (m != 0) {
+        digits++
+        m /= 10
+    }
+    if (n == 0) return 1
+    return digits
+}
 
 /**
  * Простая (2 балла)
@@ -80,21 +91,42 @@ fun digitNumber(n: Int): Int = TODO()
  * Найти число Фибоначчи из ряда 1, 1, 2, 3, 5, 8, 13, 21, ... с номером n.
  * Ряд Фибоначчи определён следующим образом: fib(1) = 1, fib(2) = 1, fib(n+2) = fib(n) + fib(n+1)
  */
-fun fib(n: Int): Int = TODO()
+fun fib(n: Int): Int {
+    var fib1 = 1
+    var fib2 = 1
+    var fib = 0
+    if ((n == 1) || (n == 2)) return 1
+    for (i in 3..n) {
+        fib = fib2 + fib1
+        fib1 = fib2
+        fib2 = fib
+    }
+    return fib
+}
 
 /**
  * Простая (2 балла)
  *
  * Для заданного числа n > 1 найти минимальный делитель, превышающий 1
  */
-fun minDivisor(n: Int): Int = TODO()
+fun minDivisor(n: Int): Int {
+    for (i in 2..sqrt(n.toDouble()).toInt()) {
+        if (n % i == 0) return i
+    }
+    return n
+}
 
 /**
  * Простая (2 балла)
  *
  * Для заданного числа n > 1 найти максимальный делитель, меньший n
  */
-fun maxDivisor(n: Int): Int = TODO()
+fun maxDivisor(n: Int): Int {
+    for (i in (n / 2) downTo sqrt(n.toDouble()).toInt()) {
+        if (n % i == 0) return i
+    }
+    return 1
+}
 
 /**
  * Простая (2 балла)
@@ -112,7 +144,16 @@ fun maxDivisor(n: Int): Int = TODO()
  * Написать функцию, которая находит, сколько шагов требуется для
  * этого для какого-либо начального X > 0.
  */
-fun collatzSteps(x: Int): Int = TODO()
+fun collatzSteps(x: Int): Int {
+    var nextX = x
+    var step = 0
+    while (nextX != 1) {
+        if (nextX % 2 == 0) nextX = nextX / 2
+        else nextX = 3 * nextX + 1
+        step += 1
+    }
+    return step
+}
 
 /**
  * Средняя (3 балла)
@@ -120,7 +161,12 @@ fun collatzSteps(x: Int): Int = TODO()
  * Для заданных чисел m и n найти наименьшее общее кратное, то есть,
  * минимальное число k, которое делится и на m и на n без остатка
  */
-fun lcm(m: Int, n: Int): Int = TODO()
+fun lcm(m: Int, n: Int): Int {
+    for (i in 2..m * n) {
+        if ((i % m == 0) && (i % n == 0)) return i
+    }
+    return m * n
+}
 
 /**
  * Средняя (3 балла)
@@ -129,7 +175,12 @@ fun lcm(m: Int, n: Int): Int = TODO()
  * Взаимно простые числа не имеют общих делителей, кроме 1.
  * Например, 25 и 49 взаимно простые, а 6 и 8 -- нет.
  */
-fun isCoPrime(m: Int, n: Int): Boolean = TODO()
+fun isCoPrime(m: Int, n: Int): Boolean {
+    for (i in 2..min(m,n)) {
+        if ((m % i == 0) && (n % i == 0)) return false
+    }
+    return true
+}
 
 /**
  * Средняя (3 балла)
@@ -138,7 +189,15 @@ fun isCoPrime(m: Int, n: Int): Boolean = TODO()
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun revert(n: Int): Int = TODO()
+fun revert(n: Int): Int {
+    var m = n
+    var newN = 0
+    while (m != 0) {
+        newN = newN * 10 + (m % 10)
+        m /= 10
+    }
+    return newN
+}
 
 /**
  * Средняя (3 балла)
@@ -149,7 +208,23 @@ fun revert(n: Int): Int = TODO()
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun isPalindrome(n: Int): Boolean = TODO()
+fun isPalindrome(n: Int): Boolean {
+    var m = n
+    var digits = 0
+    while (m != 0) {
+        m /= 10
+        digits += 1
+    }
+    m = n
+    for (i in 1..digits / 2) {
+        var w = (m % 10)                                //ищем последнюю цифру числа
+        var e = (m / 10.0.pow(digits - 1)).toInt()   //ищем первую цифру числа
+        if (w != e) return false                            //проверяем первую и последнюю цифры числа
+        m = ((m % 10.0.pow(digits - 1)) / 10).toInt()    //меняем исходное число, отбрасывая первую и последнюю цифры
+        digits -= 2                                         //и соответственно уменьшаем количество разрядов
+    }
+    return true
+}
 
 /**
  * Средняя (3 балла)
@@ -159,7 +234,16 @@ fun isPalindrome(n: Int): Boolean = TODO()
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun hasDifferentDigits(n: Int): Boolean = TODO()
+fun hasDifferentDigits(n: Int): Boolean {
+    var m = n
+    var lastDigit = m % 10
+    m /= 10
+    while (m != 0) {
+        if (lastDigit != m % 10) return true
+        m /= 10
+    }
+    return false
+}
 
 /**
  * Средняя (4 балла)

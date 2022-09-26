@@ -115,15 +115,13 @@ fun whichRookThreatens(
     kingX: Int, kingY: Int,
     rookX1: Int, rookY1: Int,
     rookX2: Int, rookY2: Int
-): Int {
-    return when {
-        (((kingY == rookY2) && (kingY == rookY1)) || ((kingX == rookX2) && (kingX == rookX1)) ||
-                ((kingY == rookY2) && (kingX == rookX1)) || ((kingX == rookX2) && (kingY == rookY1))) -> 3
+): Int = when {
+    (((kingY == rookY2) && (kingY == rookY1)) || ((kingX == rookX2) && (kingX == rookX1)) ||
+            ((kingY == rookY2) && (kingX == rookX1)) || ((kingX == rookX2) && (kingY == rookY1))) -> 3
 
-        ((kingY == rookY1) || (kingX == rookX1)) -> 1
-        ((kingY == rookY2) || (kingX == rookX2)) -> 2
-        else -> 0
-    }
+    ((kingY == rookY1) || (kingX == rookX1)) -> 1
+    ((kingY == rookY2) || (kingX == rookX2)) -> 2
+    else -> 0
 }
 
 /**
@@ -143,10 +141,11 @@ fun rookOrBishopThreatens(
 ): Int {
     var space1 = kingX - kingY
     var space2 = kingY + kingX
-    if (((space1 == bishopX - bishopY) || (space2 == bishopX + bishopY)) && ((kingY == rookY) || (kingX == rookX))) return 3
-    if ((space1 == bishopX - bishopY) || (space2 == bishopX + bishopY)) return 2
-    if ((kingY == rookY) || (kingX == rookX)) return 1
-    else return 0
+    return if (((space1 == bishopX - bishopY) || (space2 == bishopX + bishopY)) &&
+        ((kingY == rookY) || (kingX == rookX))) 3
+    else if ((space1 == bishopX - bishopY) || (space2 == bishopX + bishopY)) 2
+    else if ((kingY == rookY) || (kingX == rookX)) 1
+    else 0
 }
 
 /**
@@ -157,12 +156,10 @@ fun rookOrBishopThreatens(
  * прямоугольным (вернуть 1) или тупоугольным (вернуть 2).
  * Если такой треугольник не существует, вернуть -1.
  */
-fun triangleKind(a: Double, b: Double, c: Double): Int {
-    if ((a + b < c) || (a + c < b) || (c + b < a)) return -1
-    if (((a * a + b * b) == c * c) || ((a * a + c * c) == b * b) || ((c * c + b * b) == a * a)) return 1
-    if (((a * a + b * b) < c * c) || ((a * a + c * c) < b * b) || ((c * c + b * b) < a * a)) return 2
-    else return 0
-}
+fun triangleKind(a: Double, b: Double, c: Double): Int = if ((a + b < c) || (a + c < b) || (c + b < a)) -1
+else if (((a * a + b * b) == c * c) || ((a * a + c * c) == b * b) || ((c * c + b * b) == a * a)) 1
+else if (((a * a + b * b) < c * c) || ((a * a + c * c) < b * b) || ((c * c + b * b) < a * a)) 2
+else 0
 
 /**
  * Средняя (3 балла)
@@ -172,13 +169,11 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
  * Найти длину пересечения отрезков AB и CD.
  * Если пересечения нет, вернуть -1.
  */
-fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int {
-    return when {
-        ((a <= d) && (a >= c) && (b >= c) && (b <= d)) -> abs(a - b)
-        ((c <= b) && (c >= a) && (d <= b) && (d >= a)) -> abs(c - d)
-        ((b == c) || (a == d)) -> 0
-        ((b >= c) && (b <= d)) -> abs(c - b)
-        ((a <= d) && (a >= c)) -> abs(a - d)
-        else -> -1
-    }
+fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int = when {
+    ((a <= d) && (a >= c) && (b >= c) && (b <= d)) -> abs(a - b)
+    ((c <= b) && (c >= a) && (d <= b) && (d >= a)) -> abs(c - d)
+    ((b == c) || (a == d)) -> 0
+    ((b >= c) && (b <= d)) -> abs(c - b)
+    ((a <= d) && (a >= c)) -> abs(a - d)
+    else -> -1
 }
