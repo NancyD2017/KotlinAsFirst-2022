@@ -2,9 +2,11 @@
 
 package lesson3.task1
 
-import kotlin.math.min
-import kotlin.math.pow
-import kotlin.math.sqrt
+import java.math.BigDecimal
+import java.math.BigInteger
+import java.math.RoundingMode
+import java.util.Formatter.BigDecimalLayoutForm
+import kotlin.math.*
 
 // Урок 3: циклы
 // Максимальное количество баллов = 9
@@ -162,7 +164,7 @@ fun collatzSteps(x: Int): Int {
  * минимальное число k, которое делится и на m и на n без остатка
  */
 fun lcm(m: Int, n: Int): Int {
-    for (i in 2..m * n) {
+    for (i in max(m,n)..m * n / 2) {
         if ((i % m == 0) && (i % n == 0)) return i
     }
     return m * n
@@ -254,7 +256,21 @@ fun hasDifferentDigits(n: Int): Boolean {
  * Подумайте, как добиться более быстрой сходимости ряда при больших значениях x.
  * Использовать kotlin.math.sin и другие стандартные реализации функции синуса в этой задаче запрещается.
  */
-fun sin(x: Double, eps: Double): Double = TODO()
+fun sin(x: Double, eps: Double): Double {
+    var result = 0.toBigDecimal()
+    var power = 1
+    var countForPlusMinus = 1.toBigDecimal()
+    var factorialNumber = 1.toBigDecimal()
+    var factorial = 1.toBigDecimal()
+    while (abs(eps).toBigDecimal() <= ((x.pow(power)).toBigDecimal() / factorial)) {
+        result += ((x.pow(power)).toBigDecimal() / factorial) * countForPlusMinus
+        factorial *= (factorialNumber + 1.toBigDecimal()) * (factorialNumber + 2.toBigDecimal())
+        power += 2
+        factorialNumber += 2.toBigDecimal()
+        countForPlusMinus = -countForPlusMinus
+    }
+    return result.toDouble().roundToInt().toDouble()
+}
 
 /**
  * Средняя (4 балла)
@@ -265,7 +281,19 @@ fun sin(x: Double, eps: Double): Double = TODO()
  * Подумайте, как добиться более быстрой сходимости ряда при больших значениях x.
  * Использовать kotlin.math.cos и другие стандартные реализации функции косинуса в этой задаче запрещается.
  */
-fun cos(x: Double, eps: Double): Double = TODO()
+fun cos(x: Double, eps: Double): Double {
+    var result = 0.0
+    var power = 2
+    var countForPlusMinus = -1
+    var factorial = (1 * 2)
+    while (abs(eps) <= (x.pow(power) / factorial)) {
+        result += (x.pow(power) / factorial) * countForPlusMinus
+        factorial *= (power + 1) * (power + 2)
+        power += 2
+        countForPlusMinus = -countForPlusMinus
+    }
+    return result
+}
 
 /**
  * Сложная (4 балла)
@@ -276,7 +304,26 @@ fun cos(x: Double, eps: Double): Double = TODO()
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun squareSequenceDigit(n: Int): Int = TODO()
+fun squareSequenceDigit(n: Int): Int {
+    var line = 1.toBigDecimal()
+    var number = 2.0
+    var digits = 0
+    var digitsInLine = 1
+    while (line < (10.0.pow(n - 1)).toBigDecimal()) {
+        var numberForCount = number.pow(2)
+        while (numberForCount >= 1) {
+            numberForCount /= 10
+            digits += 1
+        }                                                     //посчитаем количество разрядов нового числа в квадрате
+        line = (line * (10.0.pow(digits)).toBigDecimal() + number.pow(2).toBigDecimal()) //добавим число в строку
+        number += 1                                           //увеличим счетчик для подсчета нового числа в строке
+        digitsInLine += digits                                //укажем количество разрядов в строке
+        digits = 0
+    }
+    digits = digitsInLine - n                                //узнаем количество "лишних" разрядов в строке
+    var toCount = (line / 10.0.pow(digits).toBigDecimal())                //убирем эти "лишние разряды"
+    return (toCount % 10.toBigDecimal()).toInt()                                    //найдем последнее оставшееся число
+}
 
 /**
  * Сложная (5 баллов)
@@ -287,4 +334,27 @@ fun squareSequenceDigit(n: Int): Int = TODO()
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun fibSequenceDigit(n: Int): Int = TODO()
+fun fibSequenceDigit(n: Int): Int {
+    var fib1 = 1
+    var fib2 = 1
+    var line = 11.toBigDecimal()
+    var digits = 0
+    var digitsInLine = 2
+    while (line < (10.0.pow(n - 1)).toBigDecimal()) {
+        var fib = fib1 + fib2
+        while (fib >= 1) {
+            fib /= 10
+            digits += 1
+        }
+        fib = fib1 + fib2                                      //посчитаем число фибоначчи, кол-во его разрядов
+        line = (line * (10.0.pow(digits)).toBigDecimal() + fib.toDouble().toBigDecimal()) //добавим число фибоначчи в строку
+        digitsInLine += digits                                //укажем количество разрядов в строке
+        digits = 0
+        fib1 = fib2
+        fib2 = fib
+    }
+    digits = digitsInLine - n                                //узнаем количество "лишних" разрядов в строке
+    var toCount = (line / 10.0.pow(digits).toBigDecimal())                //убирем эти "лишние разряды"
+    return (toCount % 10.toBigDecimal()).toInt()                                    //найдем последнее оставшееся число
+}
+
