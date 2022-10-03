@@ -2,10 +2,6 @@
 
 package lesson3.task1
 
-import java.math.BigDecimal
-import java.math.BigInteger
-import java.math.RoundingMode
-import java.util.Formatter.BigDecimalLayoutForm
 import kotlin.math.*
 
 // Урок 3: циклы
@@ -163,12 +159,7 @@ fun collatzSteps(x: Int): Int {
  * Для заданных чисел m и n найти наименьшее общее кратное, то есть,
  * минимальное число k, которое делится и на m и на n без остатка
  */
-fun lcm(m: Int, n: Int): Int {
-    for (i in max(m,n)..m * n / 2) {
-        if ((i % m == 0) && (i % n == 0)) return i
-    }
-    return m * n
-}
+fun lcm(m: Int, n: Int): Int = TODO()
 
 /**
  * Средняя (3 балла)
@@ -178,7 +169,7 @@ fun lcm(m: Int, n: Int): Int {
  * Например, 25 и 49 взаимно простые, а 6 и 8 -- нет.
  */
 fun isCoPrime(m: Int, n: Int): Boolean {
-    for (i in 2..min(m,n)) {
+    for (i in 2..min(m, n)) {
         if ((m % i == 0) && (n % i == 0)) return false
     }
     return true
@@ -257,19 +248,18 @@ fun hasDifferentDigits(n: Int): Boolean {
  * Использовать kotlin.math.sin и другие стандартные реализации функции синуса в этой задаче запрещается.
  */
 fun sin(x: Double, eps: Double): Double {
-    var result = 0.toBigDecimal()
+    val y = x % (PI * 2)
+    var result = 0.0
     var power = 1
-    var countForPlusMinus = 1.toBigDecimal()
-    var factorialNumber = 1.toBigDecimal()
-    var factorial = 1.toBigDecimal()
-    while (abs(eps).toBigDecimal() <= ((x.pow(power)).toBigDecimal() / factorial)) {
-        result += ((x.pow(power)).toBigDecimal() / factorial) * countForPlusMinus
-        factorial *= (factorialNumber + 1.toBigDecimal()) * (factorialNumber + 2.toBigDecimal())
+    var plusMinus = 1
+    var number = 100.0
+    while (abs(number) >= eps) {
+        number = y.pow(power) / factorial(power)
+        result += number * plusMinus
+        plusMinus *= -1
         power += 2
-        factorialNumber += 2.toBigDecimal()
-        countForPlusMinus = -countForPlusMinus
     }
-    return result.toDouble().roundToInt().toDouble()
+    return result
 }
 
 /**
@@ -282,15 +272,16 @@ fun sin(x: Double, eps: Double): Double {
  * Использовать kotlin.math.cos и другие стандартные реализации функции косинуса в этой задаче запрещается.
  */
 fun cos(x: Double, eps: Double): Double {
+    val y = x % (PI * 2)
     var result = 0.0
-    var power = 2
-    var countForPlusMinus = -1
-    var factorial = (1 * 2)
-    while (abs(eps) <= (x.pow(power) / factorial)) {
-        result += (x.pow(power) / factorial) * countForPlusMinus
-        factorial *= (power + 1) * (power + 2)
+    var power = 0
+    var plusMinus = 1
+    var number = 100.0
+    while (abs(number) >= eps) {
+        number = y.pow(power) / factorial(power)
+        result += number * plusMinus
+        plusMinus *= -1
         power += 2
-        countForPlusMinus = -countForPlusMinus
     }
     return result
 }
@@ -305,24 +296,20 @@ fun cos(x: Double, eps: Double): Double {
  * Использовать операции со строками в этой задаче запрещается.
  */
 fun squareSequenceDigit(n: Int): Int {
-    var line = 1.toBigDecimal()
-    var number = 2.0
-    var digits = 0
-    var digitsInLine = 1
-    while (line < (10.0.pow(n - 1)).toBigDecimal()) {
-        var numberForCount = number.pow(2)
-        while (numberForCount >= 1) {
-            numberForCount /= 10
-            digits += 1
-        }                                                     //посчитаем количество разрядов нового числа в квадрате
-        line = (line * (10.0.pow(digits)).toBigDecimal() + number.pow(2).toBigDecimal()) //добавим число в строку
-        number += 1                                           //увеличим счетчик для подсчета нового числа в строке
-        digitsInLine += digits                                //укажем количество разрядов в строке
-        digits = 0
+    var number = 1.0
+    var digitsInLine = 0
+    while (digitsInLine < n) {
+        var numberDouble = (number.pow(2)).toInt()
+        digitsInLine += digitNumber(numberDouble)
+        number += 1
     }
-    digits = digitsInLine - n                                //узнаем количество "лишних" разрядов в строке
-    var toCount = (line / 10.0.pow(digits).toBigDecimal())                //убирем эти "лишние разряды"
-    return (toCount % 10.toBigDecimal()).toInt()                                    //найдем последнее оставшееся число
+    var e = ((number - 1).pow(2)).toInt()
+    var digitsLeft = digitsInLine - n
+    while (digitsLeft > 0) {
+        e /= 10
+        digitsLeft -= 1
+    }
+    return e % 10
 }
 
 /**
@@ -335,26 +322,21 @@ fun squareSequenceDigit(n: Int): Int {
  * Использовать операции со строками в этой задаче запрещается.
  */
 fun fibSequenceDigit(n: Int): Int {
+    if (n <= 2) return 1
     var fib1 = 1
     var fib2 = 1
-    var line = 11.toBigDecimal()
-    var digits = 0
     var digitsInLine = 2
-    while (line < (10.0.pow(n - 1)).toBigDecimal()) {
-        var fib = fib1 + fib2
-        while (fib >= 1) {
-            fib /= 10
-            digits += 1
-        }
-        fib = fib1 + fib2                                      //посчитаем число фибоначчи, кол-во его разрядов
-        line = (line * (10.0.pow(digits)).toBigDecimal() + fib.toDouble().toBigDecimal()) //добавим число фибоначчи в строку
-        digitsInLine += digits                                //укажем количество разрядов в строке
-        digits = 0
+    while (digitsInLine < n) {
+        val fib = fib1 + fib2
+        digitsInLine += digitNumber(fib)
         fib1 = fib2
         fib2 = fib
     }
-    digits = digitsInLine - n                                //узнаем количество "лишних" разрядов в строке
-    var toCount = (line / 10.0.pow(digits).toBigDecimal())                //убирем эти "лишние разряды"
-    return (toCount % 10.toBigDecimal()).toInt()                                    //найдем последнее оставшееся число
+    var digitsLeft = digitsInLine - n
+    while (digitsLeft > 0) {
+        fib2 /= 10
+        digitsLeft -= 1
+    }
+    return fib2 % 10
 }
 
