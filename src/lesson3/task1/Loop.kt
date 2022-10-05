@@ -119,12 +119,7 @@ fun minDivisor(n: Int): Int {
  *
  * Для заданного числа n > 1 найти максимальный делитель, меньший n
  */
-fun maxDivisor(n: Int): Int {
-    for (i in (n / 2) downTo sqrt(n.toDouble()).toInt()) {
-        if (n % i == 0) return i
-    }
-    return 1
-}
+fun maxDivisor(n: Int): Int = n / minDivisor(n)
 
 /**
  * Простая (2 балла)
@@ -203,12 +198,7 @@ fun revert(n: Int): Int {
  */
 fun isPalindrome(n: Int): Boolean {
     var m = n
-    var digits = 0
-    while (m != 0) {
-        m /= 10
-        digits += 1
-    }
-    m = n
+    var digits = digitNumber(n)
     for (i in 1..digits / 2) {
         var w = (m % 10)                                //ищем последнюю цифру числа
         var e = (m / 10.0.pow(digits - 1)).toInt()   //ищем первую цифру числа
@@ -305,10 +295,7 @@ fun squareSequenceDigit(n: Int): Int {
     }
     var e = ((number - 1).pow(2)).toInt()
     var digitsLeft = digitsInLine - n
-    while (digitsLeft > 0) {
-        e /= 10
-        digitsLeft -= 1
-    }
+    e = forSequenceDigit(digitsLeft, e)
     return e % 10
 }
 
@@ -333,10 +320,17 @@ fun fibSequenceDigit(n: Int): Int {
         fib2 = fib
     }
     var digitsLeft = digitsInLine - n
-    while (digitsLeft > 0) {
-        fib2 /= 10
-        digitsLeft -= 1
-    }
+    fib2 = forSequenceDigit(digitsLeft, fib2)
     return fib2 % 10
+}
+
+private fun forSequenceDigit(digitsLeft: Int, e: Int): Int {
+    var digitsLeft1 = digitsLeft
+    var e1 = e
+    while (digitsLeft1 > 0) {
+        e1 /= 10
+        digitsLeft1 -= 1
+    }
+    return e1
 }
 

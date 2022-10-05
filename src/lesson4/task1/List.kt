@@ -16,16 +16,15 @@ import kotlin.math.sqrt
  *
  * Найти все корни уравнения x^2 = y
  */
-fun sqRoots(y: Double) =
-    when {
-        y < 0 -> listOf()
-        y == 0.0 -> listOf(0.0)
-        else -> {
-            val root = sqrt(y)
-            // Результат!
-            listOf(-root, root)
-        }
+fun sqRoots(y: Double) = when {
+    y < 0 -> listOf()
+    y == 0.0 -> listOf(0.0)
+    else -> {
+        val root = sqrt(y)
+        // Результат!
+        listOf(-root, root)
     }
+}
 
 /**
  * Пример
@@ -139,9 +138,9 @@ fun mean(list: List<Double>): Double = if (list.isEmpty()) 0.0 else (list.sum() 
  * Обратите внимание, что данная функция должна изменять содержание списка list, а не его копии.
  */
 fun center(list: MutableList<Double>): MutableList<Double> {
+    val middle = mean(list)
     for (i in 0 until list.size) {
-        val element = list[i]
-        list[i] = element - mean(list)
+        list[i] -= middle
     }
     return list
 }
@@ -205,12 +204,15 @@ fun accumulate(list: MutableList<Int>): MutableList<Int> {
  */
 fun factorize(n: Int): List<Int> {
     var k = n
-    var list = listOf<Int>()
-    for (i in 2..k) {
+    var list = mutableListOf<Int>()
+    var i = 2
+    while (k != 1) {
         if (k % i == 0) {
-            list += i
+            list.add(i)
             k /= i
+            i = 1
         }
+        i++
     }
     return list.sorted()
 }
@@ -222,7 +224,7 @@ fun factorize(n: Int): List<Int> {
  * Результат разложения вернуть в виде строки, например 75 -> 3*5*5
  * Множители в результирующей строке должны располагаться по возрастанию.
  */
-fun factorizeToString(n: Int): String = TODO()
+fun factorizeToString(n: Int): String = factorize(n).joinToString(separator = "*")
 
 /**
  * Средняя (3 балла)
@@ -231,7 +233,15 @@ fun factorizeToString(n: Int): String = TODO()
  * Результат перевода вернуть в виде списка цифр в base-ичной системе от старшей к младшей,
  * например: n = 100, base = 4 -> (1, 2, 1, 0) или n = 250, base = 14 -> (1, 3, 12)
  */
-fun convert(n: Int, base: Int): List<Int> = TODO()
+fun convert(n: Int, base: Int): List<Int> {
+    var m = n
+    var list = mutableListOf<Int>()
+    while (m > 0) {
+        list += (m % base)
+        m /= base
+    }
+    return list.reversed()
+}
 
 /**
  * Сложная (4 балла)

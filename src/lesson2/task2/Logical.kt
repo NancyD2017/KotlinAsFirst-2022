@@ -12,8 +12,7 @@ import kotlin.math.sqrt
  *
  * Лежит ли точка (x, y) внутри окружности с центром в (x0, y0) и радиусом r?
  */
-fun pointInsideCircle(x: Double, y: Double, x0: Double, y0: Double, r: Double) =
-    sqr(x - x0) + sqr(y - y0) <= sqr(r)
+fun pointInsideCircle(x: Double, y: Double, x0: Double, y0: Double, r: Double) = sqr(x - x0) + sqr(y - y0) <= sqr(r)
 
 /**
  * Простая (2 балла)
@@ -47,12 +46,12 @@ fun queenThreatens(x1: Int, y1: Int, x2: Int, y2: Int): Boolean {
  * Вернуть число дней в этом месяце этого года по григорианскому календарю.
  */
 fun daysInMonth(month: Int, year: Int): Int {
+    val so31 = setOf(1, 3, 5, 7, 8, 10, 12)
+    val so30 = setOf(4, 6, 9, 11)
     return when {
-        ((month == 1) || (month == 3) || (month == 5) || (month == 7) || (month == 8) || (month == 10) ||
-                (month == 12)) -> 31
-
+        (month in so31) -> 31
+        (month in so30) -> 30
         ((month == 2) && ((((year % 4) == 0) && ((year % 100) != 0)) || ((year % 400) == 0))) -> 29
-        ((month == 4) || (month == 6) || (month == 9) || (month == 11)) -> 30
         else -> 28
     }
 }
@@ -65,13 +64,13 @@ fun daysInMonth(month: Int, year: Int): Int {
  * Вернуть true, если утверждение верно
  */
 fun circleInside(
-    x1: Double, y1: Double, r1: Double,
-    x2: Double, y2: Double, r2: Double
+    x1: Double, y1: Double, r1: Double, x2: Double, y2: Double, r2: Double
 ): Boolean {
     val absx = x2 - x1
     val absy = y2 - y1
     return sqrt(absx.pow(2) + absy.pow(2)) <= r2 - r1
 }
+
 /**
  * Средняя (3 балла)
  *
@@ -81,10 +80,9 @@ fun circleInside(
  * кирпич 4 х 4 х 4 пройдёт через отверстие 4 х 4.
  * Вернуть true, если кирпич пройдёт
  */
-fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean
-{
+fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean {
     val numbers = listOf(a, b, c)
-    val min = numbers.minOrNull() ?: 0
+    val min = numbers.min()
     val medium = a + b + c - (numbers.maxOrNull() ?: 0) - min
     return ((min <= r) && (min <= s)) && ((medium <= r) || (medium <= s))
 }

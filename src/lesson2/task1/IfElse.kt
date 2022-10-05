@@ -139,13 +139,16 @@ fun rookOrBishopThreatens(
     rookX: Int, rookY: Int,
     bishopX: Int, bishopY: Int
 ): Int {
-    var space1 = kingX - kingY
-    var space2 = kingY + kingX
-    return if (((space1 == bishopX - bishopY) || (space2 == bishopX + bishopY)) &&
-        ((kingY == rookY) || (kingX == rookX))) 3
-    else if ((space1 == bishopX - bishopY) || (space2 == bishopX + bishopY)) 2
-    else if ((kingY == rookY) || (kingX == rookX)) 1
-    else 0
+    val space1 = kingX - kingY
+    val space2 = kingY + kingX
+    return when {
+        (((space1 == bishopX - bishopY) || (space2 == bishopX + bishopY)) &&
+                ((kingY == rookY) || (kingX == rookX))) -> 3
+
+        ((space1 == bishopX - bishopY) || (space2 == bishopX + bishopY)) -> 2
+        ((kingY == rookY) || (kingX == rookX)) -> 1
+        else -> 0
+    }
 }
 
 /**
@@ -156,10 +159,14 @@ fun rookOrBishopThreatens(
  * прямоугольным (вернуть 1) или тупоугольным (вернуть 2).
  * Если такой треугольник не существует, вернуть -1.
  */
-fun triangleKind(a: Double, b: Double, c: Double): Int = if ((a + b < c) || (a + c < b) || (c + b < a)) -1
-else if (((a * a + b * b) == c * c) || ((a * a + c * c) == b * b) || ((c * c + b * b) == a * a)) 1
-else if (((a * a + b * b) < c * c) || ((a * a + c * c) < b * b) || ((c * c + b * b) < a * a)) 2
-else 0
+fun triangleKind(a: Double, b: Double, c: Double): Int {
+    return when {
+        ((a + b < c) || (a + c < b) || (c + b < a)) -> -1
+        (((a * a + b * b) == c * c) || ((a * a + c * c) == b * b) || ((c * c + b * b) == a * a)) -> 1
+        (((a * a + b * b) < c * c) || ((a * a + c * c) < b * b) || ((c * c + b * b) < a * a)) -> 2
+        else -> 0
+    }
+}
 
 /**
  * Средняя (3 балла)
