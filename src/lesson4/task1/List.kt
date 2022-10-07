@@ -3,6 +3,7 @@
 package lesson4.task1
 
 import lesson1.task1.discriminant
+import lesson3.task1.digitNumber
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -204,7 +205,7 @@ fun accumulate(list: MutableList<Int>): MutableList<Int> {
  */
 fun factorize(n: Int): List<Int> {
     var k = n
-    var list = mutableListOf<Int>()
+    val list = mutableListOf<Int>()
     var i = 2
     while (k != 1) {
         if (k % i == 0) {
@@ -235,7 +236,7 @@ fun factorizeToString(n: Int): String = factorize(n).joinToString(separator = "*
  */
 fun convert(n: Int, base: Int): List<Int> {
     var m = n
-    var list = mutableListOf<Int>()
+    val list = mutableListOf<Int>()
     while (m > 0) {
         list += (m % base)
         m /= base
@@ -254,7 +255,15 @@ fun convert(n: Int, base: Int): List<Int> {
  * Использовать функции стандартной библиотеки, напрямую и полностью решающие данную задачу
  * (например, n.toString(base) и подобные), запрещается.
  */
-fun convertToString(n: Int, base: Int): String = TODO()
+fun convertToString(n: Int, base: Int): String {
+    val list = convert(n, base)
+    val s = "0123456789abcdefghijklmnopqrstuvwxwz"
+    var slist = ""
+    for (i in 0 until list.size) {
+        slist += s[list[i]]
+    }
+    return slist
+}
 
 /**
  * Средняя (3 балла)
@@ -263,7 +272,15 @@ fun convertToString(n: Int, base: Int): String = TODO()
  * из системы счисления с основанием base в десятичную.
  * Например: digits = (1, 3, 12), base = 14 -> 250
  */
-fun decimal(digits: List<Int>, base: Int): Int = TODO()
+fun decimal(digits: List<Int>, base: Int): Int {
+    var count = digits.size - 1
+    var answer = 0
+    for (element in digits) {
+        answer += ((element * base.toDouble().pow(count))).toInt()
+        count -= 1
+    }
+    return answer
+}
 
 /**
  * Сложная (4 балла)
@@ -287,7 +304,33 @@ fun decimalFromString(str: String, base: Int): Int = TODO()
  * 90 = XC, 100 = C, 400 = CD, 500 = D, 900 = CM, 1000 = M.
  * Например: 23 = XXIII, 44 = XLIV, 100 = C
  */
-fun roman(n: Int): String = TODO()
+fun roman(n: Int): String {
+    var m = n
+    var digits = digitNumber(n)
+    val d = digits
+    var s = ""
+    for (i in 0 until d) {
+        val k = (m / 10.0.pow(digits - 1)).toInt()
+        when {
+            ((k in 1..3) && (digits == 1)) -> s += "I".repeat(k)
+            ((k in 1..3) && (digits == 2)) -> s += "X".repeat(k)
+            ((k in 1..3) && (digits == 3)) -> s += "C".repeat(k)
+            ((k in 1..3) && (digits == 4)) -> s += "M".repeat(k)
+            ((k == 4) && (digits == 1)) -> s += "IV"
+            ((k == 4) && (digits == 2)) -> s += "XL"
+            ((k == 4) && (digits == 3)) -> s += "CD"
+            ((k in 5..8) && (digits == 1)) -> s += "V" + "I".repeat(k - 5)
+            ((k in 5..8) && (digits == 2)) -> s += "L" + "X".repeat(k - 5)
+            ((k in 5..8) && (digits == 3)) -> s += "D" + "C".repeat(k - 5)
+            ((k == 9) && (digits == 1)) -> s += "IX"
+            ((k == 9) && (digits == 2)) -> s += "XC"
+            ((k == 9) && (digits == 3)) -> s += "CM"
+        }
+        m %= 10.0.pow(digits - 1).toInt()
+        digits -= 1
+    }
+    return s
+}
 
 /**
  * Очень сложная (7 баллов)
@@ -296,4 +339,58 @@ fun roman(n: Int): String = TODO()
  * Например, 375 = "триста семьдесят пять",
  * 23964 = "двадцать три тысячи девятьсот шестьдесят четыре"
  */
-fun russian(n: Int): String = TODO()
+fun russian(n: Int): String {
+    var m = n
+    val triples = mutableListOf<Int>()
+    var l = ""
+    val h = listOf(
+        "", "сто ", "двести ", "триста ", "четыреста ", "пятьсот ", "шестьсот ",
+        "семьсот ", "восемьсот ", "девятьсот "
+    )
+    val t = listOf(
+        "", "десять ", "двадцать ", "тридцать ", "сорок ", "пятьдесят ", "шестьдесят ",
+        "семьдесят ", "восемьдесят ", "девяносто "
+    )
+    val elevenNineteen = listOf(
+        "", "одиннадцать ", "двенадцать ", "тринадцать ", "четырнадцать ",
+        "пятнадцать ", "шестнадцать ", "семнадцать ", "восемнадцать ", "девятнадцать "
+    )
+    val o = listOf("", "один", "два", "три ", "четыре ", "пять ", "шесть ", "семь ", "восемь ", "девять ")
+    val thousand = listOf(
+        "тысяч ", "тысяча ", "тысячи ", "тысячи ", "тысячи ", "тысяч ", "тысяч ",
+        "тысяч ", "тысяч ", "тысяч "
+    )
+    while (m > 0) {
+        triples += m % 1000
+        m /= 1000
+    }
+    for (i in triples.size - 1 downTo 0) {
+        val k = triples[i]
+        val hundreds = k / 100
+        val tens = k / 10 % 10
+        val ones = k % 10
+        val condition1 = (triples.size == 2) && (i == triples.size - 1)
+        when {
+            (condition1 && (tens == 1) && (ones in 1..9)) -> l += h[hundreds] + elevenNineteen[ones] + "тысяч "
+
+            (condition1 && (tens == 1) && (ones == 0)) -> l += h[hundreds] + t[tens] + "тысяч "
+
+            (condition1 && ((tens == 0) || (tens in 2..9)) && ((ones in 3..9) || (ones == 0))) ->
+                l += h[hundreds] + t[tens] + o[ones] + thousand[ones]
+
+            (condition1 && ((tens == 0) || (tens in 2..9)) && (ones == 1)) ->
+                l += h[hundreds] + t[tens] + "одна " + thousand[ones]
+
+            (condition1 && ((tens == 0) || (tens in 2..9)) && (ones == 2)) ->
+                l += h[hundreds] + t[tens] + "две " + thousand[ones]
+
+
+            ((tens == 1) && (ones in 1..9)) -> l += h[hundreds] + elevenNineteen[ones]
+
+            ((tens == 1) && (ones == 0)) -> l += h[hundreds] + t[tens]
+
+            ((tens == 0) || (tens in 2..9)) -> l += h[hundreds] + t[tens] + o[ones]
+        }
+    }
+    return l.trim()
+}
