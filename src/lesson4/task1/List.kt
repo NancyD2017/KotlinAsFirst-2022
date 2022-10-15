@@ -211,9 +211,7 @@ fun factorize(n: Int): List<Int> {
         if (k % i == 0) {
             list.add(i)
             k /= i
-            i = 1
-        }
-        i++
+        } else i++
     }
     return list.sorted()
 }
@@ -291,29 +289,21 @@ fun decimalFromString(str: String, base: Int): Int = TODO()
 fun roman(n: Int): String {
     var m = n
     var digits = digitNumber(n)
-    val d = digits
-    var s = ""
-    for (i in 0 until d) {
+    val st = " IXCM"
+    val str = " VLD"
+    val s = StringBuilder()
+    for (i in 0 until digitNumber(n)) {
         val k = (m / 10.0.pow(digits - 1)).toInt()
         when {
-            ((k in 1..3) && (digits == 1)) -> s += "I".repeat(k)
-            ((k in 1..3) && (digits == 2)) -> s += "X".repeat(k)
-            ((k in 1..3) && (digits == 3)) -> s += "C".repeat(k)
-            ((k in 1..3) && (digits == 4)) -> s += "M".repeat(k)
-            ((k == 4) && (digits == 1)) -> s += "IV"
-            ((k == 4) && (digits == 2)) -> s += "XL"
-            ((k == 4) && (digits == 3)) -> s += "CD"
-            ((k in 5..8) && (digits == 1)) -> s += "V" + "I".repeat(k - 5)
-            ((k in 5..8) && (digits == 2)) -> s += "L" + "X".repeat(k - 5)
-            ((k in 5..8) && (digits == 3)) -> s += "D" + "C".repeat(k - 5)
-            ((k == 9) && (digits == 1)) -> s += "IX"
-            ((k == 9) && (digits == 2)) -> s += "XC"
-            ((k == 9) && (digits == 3)) -> s += "CM"
+            (k in 1..3) -> s.append(st[digits].toString().repeat(k))
+            (k == 4) -> s.append(st[digits].toString(), str[digits].toString())
+            (k in 5..8) -> s.append(str[digits].toString(), st[digits].toString().repeat(k - 5))
+            (k == 9) -> s.append(st[digits].toString(), st[digits + 1].toString())
         }
         m %= 10.0.pow(digits - 1).toInt()
         digits -= 1
     }
-    return s
+    return s.toString()
 }
 
 /**
@@ -326,10 +316,9 @@ fun roman(n: Int): String {
 fun russian(n: Int): String {
     var m = n
     val triples = mutableListOf<Int>()
-    var l = ""
+    var l = StringBuilder()
     val h = listOf(
-        "", "сто ", "двести ", "триста ", "четыреста ", "пятьсот ", "шестьсот ",
-        "семьсот ", "восемьсот ", "девятьсот "
+        "", "сто ", "двести ", "триста ", "четыреста ", "пятьсот ", "шестьсот ", "семьсот ", "восемьсот ", "девятьсот "
     )
     val t = listOf(
         "", "десять ", "двадцать ", "тридцать ", "сорок ", "пятьдесят ", "шестьдесят ",
@@ -340,9 +329,9 @@ fun russian(n: Int): String {
         "пятнадцать ", "шестнадцать ", "семнадцать ", "восемнадцать ", "девятнадцать "
     )
     val o = listOf("", "один", "два", "три ", "четыре ", "пять ", "шесть ", "семь ", "восемь ", "девять ")
+    val oo = listOf("", "одна ", "две ")
     val thousand = listOf(
-        "тысяч ", "тысяча ", "тысячи ", "тысячи ", "тысячи ", "тысяч ", "тысяч ",
-        "тысяч ", "тысяч ", "тысяч "
+        "тысяч ", "тысяча ", "тысячи ", "тысячи ", "тысячи ", "тысяч ", "тысяч ", "тысяч ", "тысяч ", "тысяч "
     )
     while (m > 0) {
         triples += m % 1000
@@ -353,28 +342,17 @@ fun russian(n: Int): String {
         val hundreds = k / 100
         val tens = k / 10 % 10
         val ones = k % 10
-        val condition1 = (triples.size == 2) && (i == triples.size - 1)
-        when {
-            (condition1 && (tens == 1) && (ones in 1..9)) -> l += h[hundreds] + elevenNineteen[ones] + "тысяч "
-
-            (condition1 && (tens == 1) && (ones == 0)) -> l += h[hundreds] + t[tens] + "тысяч "
-
-            (condition1 && ((tens == 0) || (tens in 2..9)) && ((ones in 3..9) || (ones == 0))) ->
-                l += h[hundreds] + t[tens] + o[ones] + thousand[ones]
-
-            (condition1 && ((tens == 0) || (tens in 2..9)) && (ones == 1)) ->
-                l += h[hundreds] + t[tens] + "одна " + thousand[ones]
-
-            (condition1 && ((tens == 0) || (tens in 2..9)) && (ones == 2)) ->
-                l += h[hundreds] + t[tens] + "две " + thousand[ones]
-
-
-            ((tens == 1) && (ones in 1..9)) -> l += h[hundreds] + elevenNineteen[ones]
-
-            ((tens == 1) && (ones == 0)) -> l += h[hundreds] + t[tens]
-
-            ((tens == 0) || (tens in 2..9)) -> l += h[hundreds] + t[tens] + o[ones]
-        }
+        if ((triples.size == 2) && (i == triples.size - 1)) {
+            if (tens == 1) {
+                if (ones in 1..9) l.append(h[hundreds], elevenNineteen[ones], "тысяч ")
+                else l.append(h[hundreds], t[tens], "тысяч ")
+            } else if (((tens in 2..9)) && ((ones in 3..9) || (ones == 0)))
+                l.append(h[hundreds], t[tens], o[ones], thousand[ones])
+            else l.append(h[hundreds], t[tens], oo[ones], thousand[ones])
+        } else if (tens == 1) {
+            if (ones in 1..9) l.append(h[hundreds], elevenNineteen[ones])
+            else l.append(h[hundreds], t[tens])
+        } else l.append(h[hundreds], t[tens], o[ones])
     }
-    return l.trim()
+    return l.toString().trim()
 }

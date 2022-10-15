@@ -239,10 +239,10 @@ fun hasDifferentDigits(n: Int): Boolean {
  */
 fun sin(x: Double, eps: Double): Double {
     val y = x % (PI * 2)
-    var result = 0.0
-    var power = 1
-    var plusMinus = 1
-    var number = 100.0
+    var result = y
+    var power = 3
+    var plusMinus = -1
+    var number = y
     while (abs(number) >= eps) {
         number = y.pow(power) / factorial(power)
         result += number * plusMinus
@@ -263,10 +263,10 @@ fun sin(x: Double, eps: Double): Double {
  */
 fun cos(x: Double, eps: Double): Double {
     val y = x % (PI * 2)
-    var result = 0.0
-    var power = 0
-    var plusMinus = 1
-    var number = 100.0
+    var result = 1.0
+    var power = 2
+    var plusMinus = -1
+    var number = y
     while (abs(number) >= eps) {
         number = y.pow(power) / factorial(power)
         result += number * plusMinus
@@ -294,9 +294,7 @@ fun squareSequenceDigit(n: Int): Int {
         number += 1
     }
     var e = ((number - 1).pow(2)).toInt()
-    var digitsLeft = digitsInLine - n
-    e = forSequenceDigit(digitsLeft, e)
-    return e % 10
+    return forSequenceDigit(digitsInLine, e, n)
 }
 
 /**
@@ -319,18 +317,17 @@ fun fibSequenceDigit(n: Int): Int {
         fib1 = fib2
         fib2 = fib
     }
-    var digitsLeft = digitsInLine - n
-    fib2 = forSequenceDigit(digitsLeft, fib2)
-    return fib2 % 10
+    return forSequenceDigit(digitsInLine, fib2, n)
 }
 
-private fun forSequenceDigit(digitsLeft: Int, e: Int): Int {
+private fun forSequenceDigit(digitsInLine: Int, e: Int, n: Int): Int {
+    val digitsLeft = digitsInLine - n
     var digitsLeft1 = digitsLeft
     var e1 = e
     while (digitsLeft1 > 0) {
         e1 /= 10
         digitsLeft1 -= 1
     }
-    return e1
+    return e1 % 10
 }
 
