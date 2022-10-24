@@ -2,6 +2,9 @@
 
 package lesson6.task1
 
+import lesson2.task2.daysInMonth
+import java.lang.StringBuilder
+
 // Урок 6: разбор строк, исключения
 // Максимальное количество баллов = 13
 // Рекомендуемое количество баллов = 11
@@ -74,7 +77,32 @@ fun main() {
  * Обратите внимание: некорректная с точки зрения календаря дата (например, 30.02.2009) считается неверными
  * входными данными.
  */
-fun dateStrToDigit(str: String): String = TODO()
+fun dateStrToDigit(str: String): String {
+    val parts = str.split(" ")
+    if (parts.size != 3) return ""
+    val number: Int
+    val part = parts[1]
+    when {
+        (part == "января") -> number = 1
+        (part == "февраля") -> number = 2
+        (part == "марта") -> number = 3
+        (part == "апреля") -> number = 4
+        (part == "мая") -> number = 5
+        (part == "июня") -> number = 6
+        (part == "июля") -> number = 7
+        (part == "августа") -> number = 8
+        (part == "сентября") -> number = 9
+        (part == "октября") -> number = 10
+        (part == "ноября") -> number = 11
+        (part == "декабря") -> number = 12
+        else -> return ""
+    }
+    return when {
+        (parts[0].toInt() == 0) || (parts[2].toInt() == 0) -> ""
+        parts[0].toInt() > daysInMonth(number, parts[2].toInt()) -> ""
+        else -> (String.format("%02d.%02d.%04d", parts[0].toInt(), number, parts[2].toInt()))
+    }
+}
 
 /**
  * Средняя (4 балла)
@@ -86,7 +114,32 @@ fun dateStrToDigit(str: String): String = TODO()
  * Обратите внимание: некорректная с точки зрения календаря дата (например, 30 февраля 2009) считается неверными
  * входными данными.
  */
-fun dateDigitToStr(digital: String): String = TODO()
+fun dateDigitToStr(digital: String): String {
+    val parts = digital.split(".")
+    if (parts.size != 3) return ""
+    val number = StringBuilder()
+    val part = parts[1]
+    when {
+        (part == "01") -> number.append("январь")
+        (part == "02") -> number.append("февраля")
+        (part == "03") -> number.append("марта")
+        (part == "04") -> number.append("апреля")
+        (part == "05") -> number.append("мая")
+        (part == "06") -> number.append("июня")
+        (part == "07") -> number.append("июля")
+        (part == "08") -> number.append("августа")
+        (part == "09") -> number.append("сентября")
+        (part == "10") -> number.append("октября")
+        (part == "11") -> number.append("ноября")
+        (part == "12") -> number.append("декабря")
+        else -> return ""
+    }
+    return when {
+        (parts[0].toInt() == 0) || (parts[2].toInt() == 0) -> ""
+        parts[0].toInt() > daysInMonth(part.toInt(), parts[2].toInt()) -> ""
+        else -> String.format("%d $number %d", parts[0].toInt(), parts[2].toInt())
+    }
+}
 
 /**
  * Средняя (4 балла)
@@ -102,7 +155,24 @@ fun dateDigitToStr(digital: String): String = TODO()
  *
  * PS: Дополнительные примеры работы функции можно посмотреть в соответствующих тестах.
  */
-fun flattenPhoneNumber(phone: String): String = TODO()
+fun flattenPhoneNumber(phone: String): String {
+    val s = "+-() "
+    val c = "1234567890"
+    var plus = false
+    val set = setOf(11, 9, 8, 6, 5)
+    val result = StringBuilder()
+    for (ch in phone) {
+        if (ch == s[0]) {
+            plus = true
+            if (result.isNotEmpty()) return ""
+        }
+        if (!((ch in s) || (ch in c))) return ""
+        if (ch in c) result.append(ch.toString())
+    }
+    if (plus && (result.length in set)) return ("+${result}")
+    else if (result.length in set) return result.toString()
+    else return ""
+}
 
 /**
  * Средняя (5 баллов)
@@ -114,7 +184,21 @@ fun flattenPhoneNumber(phone: String): String = TODO()
  * Прочитать строку и вернуть максимальное присутствующее в ней число (717 в примере).
  * При нарушении формата входной строки или при отсутствии в ней чисел, вернуть -1.
  */
-fun bestLongJump(jumps: String): Int = TODO()
+fun bestLongJump(jumps: String): Int {
+    val s = " %-"
+    val c = "1234567890"
+    var maximum = 0
+    var res = StringBuilder()
+    for (ch in jumps) {
+        if (!((ch in s) || (ch in c))) return -1
+        if (ch in c) {
+            res.append(ch)
+            if (res.toString().toInt() > maximum) maximum = res.toString().toInt()
+        } else res.clear()
+    }
+    if (maximum == 0) return -1
+    return maximum
+}
 
 /**
  * Сложная (6 баллов)
@@ -127,7 +211,24 @@ fun bestLongJump(jumps: String): Int = TODO()
  * При нарушении формата входной строки, а также в случае отсутствия удачных попыток,
  * вернуть -1.
  */
-fun bestHighJump(jumps: String): Int = TODO()
+fun bestHighJump(jumps: String): Int {
+    val jump = jumps.removeRange(jumps.length - 2, jumps.length) //новая строка нужна для перебора символов в ней
+    val s = " %"                                                       //и стравнением jumps[ch + 2] с (+ и -)
+    val k = "-+"
+    val c = "1234567890"
+    var maximum = 0
+    val res = StringBuilder()
+    for (ch in jump.indices) {
+        val symbol = jumps[ch + 2]
+        if (!((jump[ch] in s) || (jump[ch] in c) || (jump[ch] in k))) return -1
+        if (jump[ch] in c) {
+            res.append(jump[ch])
+            if ((res.toString().toInt() > maximum) && (symbol in k)) maximum = res.toString().toInt()
+        } else res.clear()
+    }
+    if (maximum == 0) return -1
+    return maximum
+}
 
 /**
  * Сложная (6 баллов)
@@ -138,7 +239,45 @@ fun bestHighJump(jumps: String): Int = TODO()
  * Вернуть значение выражения (6 для примера).
  * Про нарушении формата входной строки бросить исключение IllegalArgumentException
  */
-fun plusMinus(expression: String): Int = TODO()
+fun plusMinus(expression: String): Int {
+    val s = "1234567890"
+    val h = "+-"
+    val chiffre = StringBuilder()
+    val setChiffres = mutableListOf<Int>()
+    val setPM = mutableListOf<String>()
+    var chiffreCount = 0
+    var expressionCount = 0
+    for (i in expression) {
+        if (!((i in s) || (i in h) || (i.toString() == " "))) throw IllegalArgumentException("::class.java")
+        if (i in s) {
+            chiffre.append(i)
+            expressionCount = 0
+        }
+        if ((i.toString() == " ") && (chiffre.isNotEmpty())) {
+            setChiffres.add(chiffre.toString().toInt())
+            chiffreCount += 1
+            chiffre.clear()
+        }
+        if ((i in h) && (setChiffres.size != 0)) {
+            setPM.add(i.toString())
+            chiffreCount = 0
+            expressionCount += 1
+        }
+        if ((chiffreCount > 1) || (expressionCount > 1)) throw IllegalArgumentException("::class.java")
+    }
+    if (chiffre.isNotEmpty()) {
+        setChiffres.add(chiffre.toString().toInt())
+        chiffreCount += 1
+    }
+    if ((chiffreCount > 1) || (expressionCount > 1)) throw IllegalArgumentException("::class.java")
+    var result = setChiffres[0]
+    setPM.add(" ")
+    for (i in 1 until setChiffres.size) {
+        if (setPM[i - 1].toString() == "+") result += setChiffres[i]
+        if (setPM[i - 1].toString() == "-") result -= setChiffres[i]
+    }
+    return result
+}
 
 /**
  * Сложная (6 баллов)

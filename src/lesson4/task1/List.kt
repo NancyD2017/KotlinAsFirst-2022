@@ -289,16 +289,16 @@ fun decimalFromString(str: String, base: Int): Int = TODO()
 fun roman(n: Int): String {
     var m = n
     var digits = digitNumber(n)
-    val st = " IXCM"
-    val str = " VLD"
+    val strForOne = " IXCM"
+    val strForFive = " VLD"
     val s = StringBuilder()
     for (i in 0 until digitNumber(n)) {
         val k = (m / 10.0.pow(digits - 1)).toInt()
         when {
-            (k in 1..3) -> s.append(st[digits].toString().repeat(k))
-            (k == 4) -> s.append(st[digits].toString(), str[digits].toString())
-            (k in 5..8) -> s.append(str[digits].toString(), st[digits].toString().repeat(k - 5))
-            (k == 9) -> s.append(st[digits].toString(), st[digits + 1].toString())
+            (k in 1..3) -> s.append(strForOne[digits].toString().repeat(k))
+            (k == 4) -> s.append(strForOne[digits].toString(), strForFive[digits].toString())
+            (k in 5..8) -> s.append(strForFive[digits].toString(), strForOne[digits].toString().repeat(k - 5))
+            (k == 9) -> s.append(strForOne[digits].toString(), strForOne[digits + 1].toString())
         }
         m %= 10.0.pow(digits - 1).toInt()
         digits -= 1
@@ -316,7 +316,7 @@ fun roman(n: Int): String {
 fun russian(n: Int): String {
     var m = n
     val triples = mutableListOf<Int>()
-    var l = StringBuilder()
+    val l = StringBuilder()
     val h = listOf(
         "", "сто ", "двести ", "триста ", "четыреста ", "пятьсот ", "шестьсот ", "семьсот ", "восемьсот ", "девятьсот "
     )
