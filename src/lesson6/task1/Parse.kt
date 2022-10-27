@@ -82,25 +82,25 @@ fun dateStrToDigit(str: String): String {
     if (parts.size != 3) return ""
     val number: Int
     val part = parts[1]
-    when {
-        (part == "января") -> number = 1
-        (part == "февраля") -> number = 2
-        (part == "марта") -> number = 3
-        (part == "апреля") -> number = 4
-        (part == "мая") -> number = 5
-        (part == "июня") -> number = 6
-        (part == "июля") -> number = 7
-        (part == "августа") -> number = 8
-        (part == "сентября") -> number = 9
-        (part == "октября") -> number = 10
-        (part == "ноября") -> number = 11
-        (part == "декабря") -> number = 12
+    number = when {
+        (part == "января") -> 1
+        (part == "февраля") -> 2
+        (part == "марта") -> 3
+        (part == "апреля") -> 4
+        (part == "мая") -> 5
+        (part == "июня") -> 6
+        (part == "июля") -> 7
+        (part == "августа") -> 8
+        (part == "сентября") -> 9
+        (part == "октября") -> 10
+        (part == "ноября") -> 11
+        (part == "декабря") -> 12
         else -> return ""
     }
     return when {
         (parts[0].toInt() == 0) || (parts[2].toInt() == 0) -> ""
         parts[0].toInt() > daysInMonth(number, parts[2].toInt()) -> ""
-        else -> (String.format("%02d.%02d.%04d", parts[0].toInt(), number, parts[2].toInt()))
+        else -> (String.format("%02d.%02d.%d", parts[0].toInt(), number, parts[2].toInt()))
     }
 }
 
@@ -120,7 +120,7 @@ fun dateDigitToStr(digital: String): String {
     val number = StringBuilder()
     val part = parts[1]
     when {
-        (part == "01") -> number.append("январь")
+        (part == "01") -> number.append("января")
         (part == "02") -> number.append("февраля")
         (part == "03") -> number.append("марта")
         (part == "04") -> number.append("апреля")
@@ -159,18 +159,18 @@ fun flattenPhoneNumber(phone: String): String {
     val s = "+-() "
     val c = "1234567890"
     var plus = false
-    val set = setOf(11, 9, 8, 6, 5)
     val result = StringBuilder()
-    for (ch in phone) {
-        if (ch == s[0]) {
+    for (i in 0 until phone.length) {
+        if (phone[i] == s[0]) {
             plus = true
             if (result.isNotEmpty()) return ""
         }
-        if (!((ch in s) || (ch in c))) return ""
-        if (ch in c) result.append(ch.toString())
+        if (!((phone[i] in s) || (phone[i] in c))) return ""
+        if (((phone[i] == s[0]) || (phone[i] == s[2])) && (phone[i + 1] !in c)) return ""
+        if (phone[i] in c) result.append(phone[i])
     }
-    if (plus && (result.length in set)) return ("+${result}")
-    else if (result.length in set) return result.toString()
+    if (plus) return ("+${result}")
+    if (!(plus)) return result.toString()
     else return ""
 }
 
@@ -188,7 +188,7 @@ fun bestLongJump(jumps: String): Int {
     val s = " %-"
     val c = "1234567890"
     var maximum = 0
-    var res = StringBuilder()
+    val res = StringBuilder()
     for (ch in jumps) {
         if (!((ch in s) || (ch in c))) return -1
         if (ch in c) {
