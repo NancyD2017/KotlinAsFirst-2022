@@ -117,11 +117,7 @@ fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
  *   containsIn(mapOf("a" to "z"), mapOf("a" to "z", "b" to "sweet")) -> true
  *   containsIn(mapOf("a" to "z"), mapOf("a" to "zee", "b" to "sweet")) -> false
  */
-fun containsIn(a: Map<String, String>, b: Map<String, String>): Boolean {
-    for ((key, value) in a) if ((key in b.keys) && (b[key] == value)) return true
-    if ((a.containsValue("") && b.containsValue("")) && (a.size == 1)) return true
-    return false
-}
+fun containsIn(a: Map<String, String>, b: Map<String, String>): Boolean = TODO()
 
 /**
  * Простая (2 балла)
@@ -170,9 +166,10 @@ fun whoAreInBoth(a: List<String>, b: List<String>): List<String> = a.intersect(b
  */
 fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<String, String> {
     val newMap = subtractOf(mapA.toMutableMap(), mapB.toMutableMap())
-    for ((key, value) in mapB)
-        if (newMap[key].isNullOrEmpty()) newMap[key] = value
+    for ((key, value) in mapB) {
+        if (key !in newMap.keys) newMap[key] = value
         else newMap[key] += ", " + mapB[key]
+    }
     return newMap
 }
 
@@ -220,6 +217,7 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
     for ((key, value) in stuff) {
         if ((value.second < minimum) && (kind == value.first)) {
             minimum = value.second
+            cheapGood.clear()
             cheapGood.append(key)
         }
     }
@@ -238,7 +236,7 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  */
 fun canBuildFrom(chars: List<Char>, word: String): Boolean {
     for (element in word) {
-        if (element !in chars) return false
+        if ((element.uppercaseChar() !in chars) && (element.lowercaseChar() !in chars)) return false
     }
     return true
 }

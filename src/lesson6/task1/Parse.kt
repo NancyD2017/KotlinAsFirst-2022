@@ -166,12 +166,13 @@ fun flattenPhoneNumber(phone: String): String {
             if (result.isNotEmpty()) return ""
         }
         if (!((phone[i] in s) || (phone[i] in c))) return ""
-        if (((phone[i] == s[0]) || (phone[i] == s[2])) && (phone[i + 1] !in c)) return ""
+        if (((phone[i] == s[0]) || (phone[i] == s[2])) && (phone.length > 1)) if (phone[i + 1] !in c) return ""
         if (phone[i] in c) result.append(phone[i])
     }
-    if (plus) return ("+${result}")
-    if (!(plus)) return result.toString()
-    else return ""
+    if ((plus) && (result.isNotEmpty())) return ("+${result}")
+    else if (plus) return ("")
+    return if (!(plus)) result.toString()
+    else ""
 }
 
 /**
@@ -248,7 +249,7 @@ fun plusMinus(expression: String): Int {
     var chiffreCount = 0
     var expressionCount = 0
     for (i in expression) {
-        if (!((i in s) || (i in h) || (i.toString() == " "))) throw IllegalArgumentException("::class.java")
+        if (!((i in s) || (i in h) || (i.toString() == " "))) throw IllegalArgumentException()
         if (i in s) {
             chiffre.append(i)
             expressionCount = 0
@@ -262,19 +263,19 @@ fun plusMinus(expression: String): Int {
             setPM.add(i.toString())
             chiffreCount = 0
             expressionCount += 1
-        }
-        if ((chiffreCount > 1) || (expressionCount > 1)) throw IllegalArgumentException("::class.java")
+        } else if ((i in h) && (setChiffres.size == 0)) throw IllegalArgumentException()
+        if ((chiffreCount > 1) || (expressionCount > 1)) throw IllegalArgumentException()
     }
     if (chiffre.isNotEmpty()) {
         setChiffres.add(chiffre.toString().toInt())
         chiffreCount += 1
     }
-    if ((chiffreCount > 1) || (expressionCount > 1)) throw IllegalArgumentException("::class.java")
+    if ((chiffreCount > 1) || (expressionCount > 1)) throw IllegalArgumentException()
     var result = setChiffres[0]
     setPM.add(" ")
     for (i in 1 until setChiffres.size) {
-        if (setPM[i - 1].toString() == "+") result += setChiffres[i]
-        if (setPM[i - 1].toString() == "-") result -= setChiffres[i]
+        if (setPM[i - 1] == "+") result += setChiffres[i]
+        if (setPM[i - 1] == "-") result -= setChiffres[i]
     }
     return result
 }
