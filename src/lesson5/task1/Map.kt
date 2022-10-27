@@ -3,6 +3,7 @@
 package lesson5.task1
 
 import java.lang.StringBuilder
+import kotlin.math.pow
 
 // Урок 5: ассоциативные массивы и множества
 // Максимальное количество баллов = 14
@@ -213,7 +214,7 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
  */
 fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): String? {
     val cheapGood = StringBuilder()
-    var minimum = 99999999999.9
+    var minimum = 10.0.pow(10000)
     for ((key, value) in stuff) {
         if ((value.second < minimum) && (kind == value.first)) {
             minimum = value.second
@@ -221,7 +222,7 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
             cheapGood.append(key)
         }
     }
-    return if (minimum != 99999999999.9) cheapGood.toString()
+    return if (minimum != 10.0.pow(10000)) cheapGood.toString()
     else null
 }
 

@@ -248,6 +248,7 @@ fun plusMinus(expression: String): Int {
     val setPM = mutableListOf<String>()
     var chiffreCount = 0
     var expressionCount = 0
+    if (expression.isNullOrEmpty()) throw IllegalArgumentException()
     for (i in expression) {
         if (!((i in s) || (i in h) || (i.toString() == " "))) throw IllegalArgumentException()
         if (i in s) {
