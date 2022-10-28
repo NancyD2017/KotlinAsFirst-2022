@@ -250,12 +250,12 @@ fun plusMinus(expression: String): Int {
     var expressionCount = 0
     if (expression.isNullOrEmpty()) throw IllegalArgumentException()
     for (i in expression) {
-        if (!((i in s) || (i in h) || (i.toString() == " "))) throw IllegalArgumentException()
+        if (!((i in s) || (i in h) || (i == ' '))) throw IllegalArgumentException()
         if (i in s) {
             chiffre.append(i)
             expressionCount = 0
         }
-        if ((i.toString() == " ") && (chiffre.isNotEmpty())) {
+        if ((i == ' ') && (chiffre.isNotEmpty())) {
             setChiffres.add(chiffre.toString().toInt())
             chiffreCount += 1
             chiffre.clear()
@@ -270,8 +270,8 @@ fun plusMinus(expression: String): Int {
     if (chiffre.isNotEmpty()) {
         setChiffres.add(chiffre.toString().toInt())
         chiffreCount += 1
-    }
-    if ((chiffreCount > 1) || (expressionCount > 1)) throw IllegalArgumentException()
+    } else throw IllegalArgumentException()
+    if ((chiffreCount > 1) || (expressionCount > 1) || (expressionCount > chiffreCount)) throw IllegalArgumentException()
     var result = setChiffres[0]
     setPM.add(" ")
     for (i in 1 until setChiffres.size) {
