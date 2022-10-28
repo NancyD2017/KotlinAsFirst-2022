@@ -326,7 +326,7 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
     val mapFriends = mutableMapOf<String, MutableSet<String>>()
     for ((key, value) in friends) if (key !in mapFriends.keys) mapFriends[key] = value.toMutableSet()
     var i = 0
-    while (i < factorial(friends.values.size)) {
+    while (i < friends.values.size.toDouble().pow(2)) {
         for ((key, value) in friends) {
             for (element in value) {
                 i += 1
