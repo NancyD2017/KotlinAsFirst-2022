@@ -331,13 +331,17 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
                     if (element.isNotBlank()) newFriends[element] = mutableSetOf()
                 } else {
                     val newF = newFriends[element]!!
-                    for (i in newF) if (i.isNotBlank()) newFriends[key] = (value + newF - key).toMutableSet()
+                    for (i in newF) {
+                        if ((i.isNotBlank()) && (i != key)) newFriends[key] = (value + i).toMutableSet()
+                        println(newFriends)
+                    }
+
                 }
             }
         }
-        val condition = mapFriends != newFriends
+        val fl = mapFriends != newFriends
         mapFriends.putAll(newFriends)
-    } while (condition)
+    } while (fl)
     return mapFriends
 }
 
