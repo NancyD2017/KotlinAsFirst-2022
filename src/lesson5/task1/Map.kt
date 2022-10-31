@@ -322,26 +322,22 @@ fun hasAnagrams(words: List<String>): Boolean {
  *        )
  */
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
-    val mapFriends = mutableMapOf<String, MutableSet<String>>()
-    var i = 0
-    for ((key, value) in friends) if (key !in mapFriends.keys) mapFriends[key] = value.toMutableSet()
-    while (i < friends.values.size.toDouble().pow(2)) {
-        for ((key, value) in friends) {
+    val mapFriends = friends.mapValues { it.value.toMutableSet() }.toMutableMap()
+    do {
+        val newFriends = mapFriends.toMutableMap()
+        for ((key, value) in mapFriends) {
             for (element in value) {
-                i += 1
-                if (element !in friends.keys){
-                    if (element.isNotEmpty()) mapFriends[element] = mutableSetOf()
-                }
-                if (element in mapFriends.keys) {
-                    val kindaFriend = mapFriends[element].orEmpty()
-                    for (each in kindaFriend) {
-                        if ((each != key) && (each.isNotEmpty())) mapFriends[key]?.add(each)
-                        i += 1
-                    }
+                if (newFriends[element].isNullOrEmpty()) {
+                    if (element.isNotBlank()) newFriends[element] = mutableSetOf()
+                } else {
+                    val newF = newFriends[element]!!
+                    for (i in newF) if (i.isNotBlank()) newFriends[key] = (value + newF - key).toMutableSet()
                 }
             }
         }
-    }
+        val condition = mapFriends != newFriends
+        mapFriends.putAll(newFriends)
+    } while (condition)
     return mapFriends
 }
 
