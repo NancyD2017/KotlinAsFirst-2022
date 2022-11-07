@@ -82,22 +82,13 @@ fun dateStrToDigit(str: String): String {
     if (parts.size != 3) return ""
     val number: Int
     val part = parts[1]
-    number = when {
-        (part == "января") -> 1
-        (part == "февраля") -> 2
-        (part == "марта") -> 3
-        (part == "апреля") -> 4
-        (part == "мая") -> 5
-        (part == "июня") -> 6
-        (part == "июля") -> 7
-        (part == "августа") -> 8
-        (part == "сентября") -> 9
-        (part == "октября") -> 10
-        (part == "ноября") -> 11
-        (part == "декабря") -> 12
-        else -> return ""
-    }
+    val list = listOf(
+        "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября",
+        "декабря"
+    )
+    if (part in list) number = list.indexOf(part) + 1 else return ""
     return when {
+        ((parts[0].toIntOrNull() == null) || (parts[0].toIntOrNull() == null)) -> ""
         (parts[0].toInt() == 0) || (parts[2].toInt() == 0) -> ""
         parts[0].toInt() > daysInMonth(number, parts[2].toInt()) -> ""
         else -> (String.format("%02d.%02d.%d", parts[0].toInt(), number, parts[2].toInt()))
@@ -119,21 +110,12 @@ fun dateDigitToStr(digital: String): String {
     if (parts.size != 3) return ""
     val number = StringBuilder()
     val part = parts[1]
-    when {
-        (part == "01") -> number.append("января")
-        (part == "02") -> number.append("февраля")
-        (part == "03") -> number.append("марта")
-        (part == "04") -> number.append("апреля")
-        (part == "05") -> number.append("мая")
-        (part == "06") -> number.append("июня")
-        (part == "07") -> number.append("июля")
-        (part == "08") -> number.append("августа")
-        (part == "09") -> number.append("сентября")
-        (part == "10") -> number.append("октября")
-        (part == "11") -> number.append("ноября")
-        (part == "12") -> number.append("декабря")
-        else -> return ""
-    }
+    val listForMonth = listOf(
+        "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября",
+        "декабря"
+    )
+    val listForDays = listOf("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
+    if (part in listForDays) number.append(listForMonth[listForDays.indexOf(part)]) else return ""
     return when {
         (parts[0].toInt() == 0) || (parts[2].toInt() == 0) -> ""
         parts[0].toInt() > daysInMonth(part.toInt(), parts[2].toInt()) -> ""
@@ -156,19 +138,26 @@ fun dateDigitToStr(digital: String): String {
  * PS: Дополнительные примеры работы функции можно посмотреть в соответствующих тестах.
  */
 fun flattenPhoneNumber(phone: String): String {
-    val s = "+-() "
-    val c = "1234567890"
+    val mySymbols = "+-() "
+    val chiffres = "1234567890"
     var plus = false
+    var isBraceNumberCorrect2 = 0
+    var isBraceNumberCorrect3 = 0
     val result = StringBuilder()
     for (i in 0 until phone.length) {
-        if (phone[i] == s[0]) {
+        if (phone[i] == mySymbols[2]) isBraceNumberCorrect2 += 1
+        if (phone[i] == mySymbols[3]) isBraceNumberCorrect3 += 1
+        if (phone[i] == mySymbols[0]) {
+            if (plus) return ""
             plus = true
             if (result.isNotEmpty()) return ""
         }
-        if (!((phone[i] in s) || (phone[i] in c))) return ""
-        if (((phone[i] == s[0]) || (phone[i] == s[2])) && (phone.length > 1)) if (phone[i + 1] !in c) return ""
-        if (phone[i] in c) result.append(phone[i])
+        if (!((phone[i] in mySymbols) || (phone[i] in chiffres))) return ""
+        if (((phone[i] == mySymbols[0]) || (phone[i] == mySymbols[2])) && (phone.length > 1))
+            if (phone[i + 1] !in chiffres) return ""
+        if (phone[i] in chiffres) result.append(phone[i])
     }
+    if (isBraceNumberCorrect2 != isBraceNumberCorrect3) return ""
     if ((plus) && (result.isNotEmpty())) return ("+${result}")
     else if (plus) return ("")
     return if (!(plus)) result.toString()
@@ -186,16 +175,13 @@ fun flattenPhoneNumber(phone: String): String {
  * При нарушении формата входной строки или при отсутствии в ней чисел, вернуть -1.
  */
 fun bestLongJump(jumps: String): Int {
-    val s = " %-"
-    val c = "1234567890"
+    val jumpings = jumps.split(" ")
+    val mySymbols = " %-"
+    val chiffres = "1234567890"
     var maximum = 0
-    val res = StringBuilder()
-    for (ch in jumps) {
-        if (!((ch in s) || (ch in c))) return -1
-        if (ch in c) {
-            res.append(ch)
-            if (res.toString().toInt() > maximum) maximum = res.toString().toInt()
-        } else res.clear()
+    for (jump in jumpings) {
+        if (jump.toIntOrNull() is Int) if (jump.toInt() > maximum) maximum = jump.toInt()
+        for (i in jump) if ((i !in mySymbols) && (i !in chiffres)) return -1
     }
     if (maximum == 0) return -1
     return maximum
@@ -214,17 +200,17 @@ fun bestLongJump(jumps: String): Int {
  */
 fun bestHighJump(jumps: String): Int {
     val jump = jumps.removeRange(jumps.length - 2, jumps.length) //новая строка нужна для перебора символов в ней
-    val s = " %"                                                       //и стравнением jumps[ch + 2] с (+ и -)
-    val k = "-+"
-    val c = "1234567890"
+    val mySymbols = " %"                                                       //и стравнением jumps[ch + 2] с (+ и -)
+    val plusMinus = "-+"
+    val chiffres = "1234567890"
     var maximum = 0
     val res = StringBuilder()
     for (ch in jump.indices) {
         val symbol = jumps[ch + 2]
-        if (!((jump[ch] in s) || (jump[ch] in c) || (jump[ch] in k))) return -1
-        if (jump[ch] in c) {
+        if (!((jump[ch] in mySymbols) || (jump[ch] in chiffres) || (jump[ch] in plusMinus))) return -1
+        if (jump[ch] in chiffres) {
             res.append(jump[ch])
-            if ((res.toString().toInt() > maximum) && (symbol in k)) maximum = res.toString().toInt()
+            if ((res.toString().toInt() > maximum) && (symbol in plusMinus)) maximum = res.toString().toInt()
         } else res.clear()
     }
     if (maximum == 0) return -1
@@ -290,7 +276,21 @@ fun plusMinus(expression: String): Int {
  * Вернуть индекс начала первого повторяющегося слова, или -1, если повторов нет.
  * Пример: "Он пошёл в в школу" => результат 9 (индекс первого 'в')
  */
-fun firstDuplicateIndex(str: String): Int = TODO()
+fun firstDuplicateIndex(str: String): Int {
+    val sets = str.lowercase().split(" ")
+    var setOne = sets[0]
+    var index = setOne.length
+    if (sets.size == 1) return -1
+    for (i in 1 until sets.size) {
+        if (setOne == sets[i]) {
+            index -= sets[i].length
+            break
+        }
+        index += sets[i].length + 1
+        setOne = sets[i]
+    }
+    return index
+}
 
 /**
  * Сложная (6 баллов)

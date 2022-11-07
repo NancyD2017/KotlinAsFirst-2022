@@ -3,6 +3,7 @@
 package lesson7.task1
 
 import java.io.File
+import java.lang.StringBuilder
 
 // Урок 7: работа с файлами
 // Урок интегральный, поэтому его задачи имеют сильно увеличенную стоимость
@@ -63,7 +64,16 @@ fun alignFile(inputName: String, lineLength: Int, outputName: String) {
  * Подчёркивание в середине и/или в конце строк значения не имеет.
  */
 fun deleteMarked(inputName: String, outputName: String) {
-    TODO()
+    val writer = File(outputName).bufferedWriter()
+    for (line in File(inputName).readLines()) {
+        if (line.isNotEmpty()) {
+            if (line[0] != '_') {
+                writer.write(line)
+                writer.newLine()
+            }
+        } else writer.newLine()
+    }
+    writer.close()
 }
 
 /**
@@ -75,7 +85,23 @@ fun deleteMarked(inputName: String, outputName: String) {
  * Регистр букв игнорировать, то есть буквы е и Е считать одинаковыми.
  *
  */
-fun countSubstrings(inputName: String, substrings: List<String>): Map<String, Int> = TODO()
+fun countSubstrings(inputName: String, substrings: List<String>): Map<String, Int> {
+    val result = mutableMapOf<String, Int>()
+    val tInInputName = File(inputName).readText().lowercase()
+    var matchLength = 0
+    for (word in substrings) {
+        result[word] = 0
+        val w = word.lowercase()
+        for (i in 0 until tInInputName.length) {
+            if (w[0] == tInInputName[i]) {
+                for (j in 1 until w.length) if (i + j < tInInputName.length) if (w[j] == tInInputName[i + j]) matchLength++
+                if (matchLength + 1 == w.length) result[word] = result[word]!! + 1
+            }
+            matchLength = 0
+        }
+    }
+    return result
+}
 
 
 /**
@@ -92,7 +118,30 @@ fun countSubstrings(inputName: String, substrings: List<String>): Map<String, In
  *
  */
 fun sibilants(inputName: String, outputName: String) {
-    TODO()
+    val writer = File(outputName).bufferedWriter()
+    val stringFirst = "жчшщЖЧШЩ"
+    for (line in File(inputName).readLines()) {
+        for (i in 0 until line.length) {
+            if (i > 0) {
+                var case = 0
+                if (line[i].uppercaseChar() == line[i]) case = 1
+                when {
+                    ((line[i - 1] in stringFirst) && ((line[i] == 'ы') || (line[i] == 'Ы'))) ->
+                        if (case == 0) writer.write("и") else writer.write("И")
+
+                    ((line[i - 1] in stringFirst) && ((line[i] == 'ю') || (line[i] == 'Ю'))) ->
+                        if (case == 0) writer.write("у") else writer.write("У")
+
+                    ((line[i - 1] in stringFirst) && ((line[i] == 'я') || (line[i] == 'Я'))) ->
+                        if (case == 0) writer.write("а") else writer.write("А")
+
+                    else -> writer.write(line[i].toString())
+                }
+            } else writer.write(line[i].toString())
+        }
+        writer.newLine()
+    }
+    writer.close()
 }
 
 /**
@@ -113,7 +162,18 @@ fun sibilants(inputName: String, outputName: String) {
  *
  */
 fun centerFile(inputName: String, outputName: String) {
-    TODO()
+    val writer = File(outputName).bufferedWriter()
+    var maxLen = 0
+    for (line in File(inputName).readLines()) if (line.length > maxLen) maxLen = line.length
+    for (line in File(inputName).readLines()) {
+        val t = line.trim()
+        if (t.length < maxLen) {
+            writer.write(" ".repeat((maxLen - t.length) / 2))
+            writer.write(t)
+        } else writer.write(t)
+        writer.newLine()
+    }
+    writer.close()
 }
 
 /**
@@ -144,7 +204,49 @@ fun centerFile(inputName: String, outputName: String) {
  * 8) Если входной файл удовлетворяет требованиям 1-7, то он должен быть в точности идентичен выходному файлу
  */
 fun alignFileByWidth(inputName: String, outputName: String) {
-    TODO()
+    val writer = File(outputName).bufferedWriter()
+    var maxLen = 0                //нужен для определения максимальной длины строки с "нормальным" количеством пробелов
+    val newLine = StringBuilder() //для каждой строки из текста строит строку с "нормальным" количеством пробелов
+    val text = StringBuilder()    //строит текст из newLine-ов
+    val list = mutableListOf<Int>()     //ищет "нормальное" количество пробелов для каждой из строк
+    var spacesCount = 0                 //ищет "нормальное" количество пробелов в одной строке
+    for (line in File(inputName).readLines()) {
+        for (i in 0 until line.length) {
+            if (i + 1 < line.length) {
+                if (!((line[i] == line[i + 1]) && (line[i] == ' '))) newLine.append(line[i])
+            } else newLine.append(line[line.length - 1])
+        }
+        if (newLine.trim().length > maxLen) maxLen = newLine.trim().length
+        text.append("${newLine.trim()}\n")
+        for (i in 0 until newLine.trim().length) if (newLine.trim()[i] == ' ') spacesCount++
+        newLine.clear()
+        list.add(spacesCount)
+        spacesCount = 0
+    }
+    val set = text.toString().split("\n")                              //делит text на строки
+    for ((lineNumber, line) in set.withIndex()) {
+        if (line.length < maxLen) {
+            var spacesLeft = maxLen - line.length                               //считает недостаток пробелов в строке
+            spacesCount = if (list.size > lineNumber) list[lineNumber] else 0   //считает недостающее количество пробелов для каждой из строк
+            val spacesNumber = if (spacesCount > 0) spacesLeft / spacesCount else 0 //считает, на сколько пробелов нужно заменить каждый из пробелов
+            for (i in line.indices) {
+                if ((line[i] == ' ') && (spacesLeft > 0)) {
+                    if (spacesNumber * spacesCount < spacesLeft) {
+                        writer.write(" ".repeat(spacesNumber + 2))              //добавляет к spacesNumber один
+                        spacesLeft -= (spacesNumber + 1)                           //пробел который был и один,
+                        spacesCount -= 1                                           // образовавшийся из-за остатка
+                    } else {
+                        writer.write(" ".repeat(spacesNumber + 1))              //добавляет к spacesNumber один
+                        spacesLeft -= spacesNumber                                 //пробел который был
+                        spacesCount -= 1
+                    }
+                } else if ((line[i] == ' ') && (spacesLeft == 0)) writer.write(" ") //оставляет по 1 пробелу, когда это нужно
+                else writer.write(line[i].toString())                                   //или записывает непробельный символ line[i]
+            }
+        } else writer.write(line)                       //если у строки maxLen то она не изменяется
+        if (set.size - 1 != lineNumber) writer.newLine()//переходит на новую строку всегда, кроме самой последней строки
+    }
+    writer.close()
 }
 
 /**
@@ -205,7 +307,24 @@ fun top20Words(inputName: String): Map<String, Int> = TODO()
  * Обратите внимание: данная функция не имеет возвращаемого значения
  */
 fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: String) {
-    TODO()
+    val text = File(inputName).readText()
+    val writer = File(outputName).bufferedWriter()
+    var small = false
+    for (i in text) {
+        if (i.lowercaseChar() == i) small = true
+        if (i.lowercaseChar() in dictionary.keys) {
+            if (small) dictionary[i]?.lowercase()?.let { writer.write(it) }
+            if (!small) {
+                val t = (dictionary[i.lowercaseChar()])
+                for (j in 0 until t!!.length) if (j == 1) writer.write(t[j].lowercase()) else
+                    writer.write(t[j].uppercase())
+            }
+        } else if (i.uppercaseChar() in dictionary.keys) {
+            if (small) dictionary[i.uppercaseChar()]?.let { writer.write(it) }
+            if (!small) dictionary[i.uppercaseChar()]?.let { writer.write(it) }
+        } else writer.write(i.toString())
+    }
+    writer.close()
 }
 
 /**
@@ -233,7 +352,25 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
  * Обратите внимание: данная функция не имеет возвращаемого значения
  */
 fun chooseLongestChaoticWord(inputName: String, outputName: String) {
-    TODO()
+    val set = mutableSetOf<Char>()
+    val writer = File(outputName).bufferedWriter()
+    val s = StringBuilder()
+    var maxLen = 0
+    for (line in File(inputName).readLines()) {
+        for (i in line) {
+            if (i.lowercaseChar() !in set) set.add(i.lowercaseChar())
+            else break
+        }
+        if (set.size > maxLen) {
+            maxLen = set.size
+            s.clear().append(line)
+        } else if (set.size == maxLen) {
+            s.append(", $line")
+        }
+        set.clear()
+    }
+    writer.write(s.toString())
+    writer.close()
 }
 
 /**

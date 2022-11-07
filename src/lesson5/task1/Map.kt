@@ -3,7 +3,6 @@
 package lesson5.task1
 
 import java.lang.StringBuilder
-import kotlin.math.pow
 
 // Урок 5: ассоциативные массивы и множества
 // Максимальное количество баллов = 14
@@ -102,7 +101,7 @@ fun buildWordSet(text: List<String>): MutableSet<String> {
 fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
     val newGrades = mutableMapOf<Int, MutableList<String>>()
     for ((key, value) in grades) {
-        if (newGrades[value].isNullOrEmpty()) newGrades[value] = mutableListOf(key)
+        if (newGrades[value] == null) newGrades[value] = mutableListOf(key)
         else newGrades[value]?.add(key)
     }
     return newGrades
@@ -188,12 +187,12 @@ fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<S
 fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Double> {
     val newPrices = mutableMapOf<String, Double>()
     val nameCountPrice = mutableMapOf<String, Pair<Int, Double>>()
-    for ((key, value) in stockPrices) {
-        if (key !in nameCountPrice.keys) nameCountPrice[key] = Pair(stockPrices.count { it.first == key }, value)
-        else nameCountPrice[key] = Pair(stockPrices.count { it.first == key }, value + nameCountPrice[key]?.second!!)
+    var value: Double
+    for (each in stockPrices) {
+        value = if (nameCountPrice[each.first]?.second == null) 0.0 else nameCountPrice[each.first]!!.second
+        nameCountPrice[each.first] = Pair(stockPrices.count { it.first == each.first }, each.second + value)
     }
-    for ((key, value) in nameCountPrice)
-        if (key !in newPrices.keys) newPrices[key] = value.second / value.first
+    for ((key, value) in nameCountPrice) newPrices[key] = value.second / value.first
     return newPrices
 }
 
@@ -214,15 +213,15 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
  */
 fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): String? {
     val cheapGood = StringBuilder()
-    var minimum = 10.0.pow(10000)
+    var minimum = -1.0
     for ((key, value) in stuff) {
-        if ((value.second < minimum) && (kind == value.first)) {
+        if (kind == value.first) if ((value.second < minimum) || (minimum < 0)) {
             minimum = value.second
             cheapGood.clear()
             cheapGood.append(key)
         }
     }
-    return if (minimum != 10.0.pow(10000)) cheapGood.toString()
+    return if (minimum != -1.0) cheapGood.toString()
     else null
 }
 
@@ -276,13 +275,12 @@ fun extractRepeats(list: List<String>): Map<String, Int> {
  *   hasAnagrams(listOf("тор", "свет", "рот")) -> true
  */
 fun hasAnagrams(words: List<String>): Boolean {
-    val list = mutableListOf<Char>()
-    val set = mutableSetOf<List<Char>>()
+    val variety = mutableSetOf<List<Char>>()
+    var variety2: MutableSet<List<Char>>
     for (word in words) {
-        for (i in word) list.add(i)
-        if (list.sorted() !in set) set.add(list.sorted())
-        else return true
-        list.clear()
+        variety2 = variety.toMutableSet()
+        variety.addAll(listOf(word.toList().sorted()))
+        if (variety == variety2) return true
     }
     return false
 }
@@ -359,12 +357,12 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
  *   findSumOfTwo(listOf(1, 2, 3), 6) -> Pair(-1, -1)
  */
 fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
-    for (i in 0 until list.size - 1)
-        for (j in 1 until list.size) {
-            if ((list[i] + list[j] == number) && (i != j)) {
-                return Pair(i, j)
-            }
+    for (i in 0 until list.size) {
+        val j = number - list[i]
+        if (j in list) {
+            if (list.indexOf(j) != i) return if (list[i] > j) Pair(list.indexOf(j), i) else Pair(i, list.indexOf(j))
         }
+    }
     return Pair(-1, -1)
 }
 
