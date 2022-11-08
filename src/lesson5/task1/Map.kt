@@ -213,15 +213,15 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
  */
 fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): String? {
     val cheapGood = StringBuilder()
-    var minimum = -1.0
+    var minimum = Double.POSITIVE_INFINITY
     for ((key, value) in stuff) {
-        if (kind == value.first) if ((value.second < minimum) || (minimum < 0)) {
+        if (kind == value.first) if (value.second < minimum) {
             minimum = value.second
             cheapGood.clear()
             cheapGood.append(key)
         }
     }
-    return if (minimum != -1.0) cheapGood.toString()
+    return if (minimum != Double.POSITIVE_INFINITY) cheapGood.toString()
     else null
 }
 

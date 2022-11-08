@@ -164,7 +164,7 @@ fun sibilants(inputName: String, outputName: String) {
 fun centerFile(inputName: String, outputName: String) {
     val writer = File(outputName).bufferedWriter()
     var maxLen = 0
-    for (line in File(inputName).readLines()) if (line.length > maxLen) maxLen = line.length
+    for (line in File(inputName).readLines()) if (line.trim().length > maxLen) maxLen = line.trim().length
     for (line in File(inputName).readLines()) {
         val t = line.trim()
         if (t.length < maxLen) {
@@ -320,7 +320,7 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
                     writer.write(t[j].uppercase())
             }
         } else if (i.uppercaseChar() in dictionary.keys) {
-            if (small) dictionary[i.uppercaseChar()]?.let { writer.write(it) }
+            if (small) dictionary[i.uppercaseChar()]?.let { writer.write(it.lowercase()) }
             if (!small) dictionary[i.uppercaseChar()]?.let { writer.write(it) }
         } else writer.write(i.toString())
     }
@@ -356,18 +356,23 @@ fun chooseLongestChaoticWord(inputName: String, outputName: String) {
     val writer = File(outputName).bufferedWriter()
     val s = StringBuilder()
     var maxLen = 0
+    var isLetterSame = false
     for (line in File(inputName).readLines()) {
         for (i in line) {
             if (i.lowercaseChar() !in set) set.add(i.lowercaseChar())
-            else break
+            else {
+                isLetterSame = true
+                break
+            }
         }
-        if (set.size > maxLen) {
+        if ((set.size > maxLen) && (!(isLetterSame))) {
             maxLen = set.size
             s.clear().append(line)
         } else if (set.size == maxLen) {
             s.append(", $line")
         }
         set.clear()
+        isLetterSame = false
     }
     writer.write(s.toString())
     writer.close()

@@ -139,7 +139,6 @@ fun dateDigitToStr(digital: String): String {
  */
 fun flattenPhoneNumber(phone: String): String {
     val mySymbols = "+-() "
-    val chiffres = "1234567890"
     var plus = false
     var isBraceNumberCorrect2 = 0
     var isBraceNumberCorrect3 = 0
@@ -152,10 +151,10 @@ fun flattenPhoneNumber(phone: String): String {
             plus = true
             if (result.isNotEmpty()) return ""
         }
-        if (!((phone[i] in mySymbols) || (phone[i] in chiffres))) return ""
+        if (!((phone[i] in mySymbols) || (phone[i] in '0'..'9'))) return ""
         if (((phone[i] == mySymbols[0]) || (phone[i] == mySymbols[2])) && (phone.length > 1))
-            if (phone[i + 1] !in chiffres) return ""
-        if (phone[i] in chiffres) result.append(phone[i])
+            if (phone[i + 1] !in '0'..'9') return ""
+        if (phone[i] in '0'..'9') result.append(phone[i])
     }
     if (isBraceNumberCorrect2 != isBraceNumberCorrect3) return ""
     if ((plus) && (result.isNotEmpty())) return ("+${result}")
@@ -177,11 +176,10 @@ fun flattenPhoneNumber(phone: String): String {
 fun bestLongJump(jumps: String): Int {
     val jumpings = jumps.split(" ")
     val mySymbols = " %-"
-    val chiffres = "1234567890"
     var maximum = 0
     for (jump in jumpings) {
         if (jump.toIntOrNull() is Int) if (jump.toInt() > maximum) maximum = jump.toInt()
-        for (i in jump) if ((i !in mySymbols) && (i !in chiffres)) return -1
+        for (i in jump) if ((i !in mySymbols) && (i !in '0'..'9')) return -1
     }
     if (maximum == 0) return -1
     return maximum
@@ -199,21 +197,17 @@ fun bestLongJump(jumps: String): Int {
  * вернуть -1.
  */
 fun bestHighJump(jumps: String): Int {
-    val jump = jumps.removeRange(jumps.length - 2, jumps.length) //новая строка нужна для перебора символов в ней
-    val mySymbols = " %"                                                       //и стравнением jumps[ch + 2] с (+ и -)
-    val plusMinus = "-+"
-    val chiffres = "1234567890"
-    var maximum = 0
-    val res = StringBuilder()
-    for (ch in jump.indices) {
-        val symbol = jumps[ch + 2]
-        if (!((jump[ch] in mySymbols) || (jump[ch] in chiffres) || (jump[ch] in plusMinus))) return -1
-        if (jump[ch] in chiffres) {
-            res.append(jump[ch])
-            if ((res.toString().toInt() > maximum) && (symbol in plusMinus)) maximum = res.toString().toInt()
-        } else res.clear()
+    val goodJumps = jumps.split(Regex("""\d+ \%+-*+""")).filter { it.length >= 3 }
+    var maximum = -1                    //3, потому что в условии хороший прыжок состоит из числа, пробела и символа +
+    val height = StringBuilder()
+    for (jump in goodJumps) {
+        for (i in jump) {
+            if (i in '0'..'9') {
+                height.append(i)
+                if (height.toString().toInt() > maximum) maximum = height.toString().toInt()
+            } else height.clear()
+        }
     }
-    if (maximum == 0) return -1
     return maximum
 }
 
@@ -227,7 +221,6 @@ fun bestHighJump(jumps: String): Int {
  * Про нарушении формата входной строки бросить исключение IllegalArgumentException
  */
 fun plusMinus(expression: String): Int {
-    val s = "1234567890"
     val h = "+-"
     val chiffre = StringBuilder()
     val setChiffres = mutableListOf<Int>()
@@ -236,8 +229,8 @@ fun plusMinus(expression: String): Int {
     var expressionCount = 0
     if (expression.isNullOrEmpty()) throw IllegalArgumentException()
     for (i in expression) {
-        if (!((i in s) || (i in h) || (i == ' '))) throw IllegalArgumentException()
-        if (i in s) {
+        if (!((i in '0'..'9') || (i in h) || (i == ' '))) throw IllegalArgumentException()
+        if (i in '0'..'9') {
             chiffre.append(i)
             expressionCount = 0
         }
@@ -280,16 +273,18 @@ fun firstDuplicateIndex(str: String): Int {
     val sets = str.lowercase().split(" ")
     var setOne = sets[0]
     var index = setOne.length
+    var isThereDouble = false
     if (sets.size == 1) return -1
     for (i in 1 until sets.size) {
         if (setOne == sets[i]) {
             index -= sets[i].length
+            isThereDouble = true
             break
         }
         index += sets[i].length + 1
         setOne = sets[i]
     }
-    return index
+    return if (isThereDouble) index else -1
 }
 
 /**
