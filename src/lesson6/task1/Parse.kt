@@ -197,6 +197,7 @@ fun bestLongJump(jumps: String): Int {
  * вернуть -1.
  */
 fun bestHighJump(jumps: String): Int {
+    for (j in jumps) if (!((j in '0'..'9') || (j in " +-%"))) return -1
     val goodJumps = jumps.split(Regex("""\d+ \%+-*+""")).filter { it.length >= 3 }
     var maximum = -1                    //3, потому что в условии хороший прыжок состоит из числа, пробела и символа +
     val height = StringBuilder()

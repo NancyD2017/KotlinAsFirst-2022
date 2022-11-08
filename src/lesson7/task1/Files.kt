@@ -316,7 +316,7 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
             if (small) dictionary[i]?.lowercase()?.let { writer.write(it) }
             if (!small) {
                 val t = (dictionary[i.lowercaseChar()])
-                for (j in 0 until t!!.length) if (j == 1) writer.write(t[j].lowercase()) else
+                for (j in 0 until t!!.length) if (j != 0) writer.write(t[j].lowercase()) else
                     writer.write(t[j].uppercase())
             }
         } else if (i.uppercaseChar() in dictionary.keys) {
@@ -368,7 +368,7 @@ fun chooseLongestChaoticWord(inputName: String, outputName: String) {
         if ((set.size > maxLen) && (!(isLetterSame))) {
             maxLen = set.size
             s.clear().append(line)
-        } else if (set.size == maxLen) {
+        } else if ((set.size == maxLen) && (!(isLetterSame))) {
             s.append(", $line")
         }
         set.clear()
