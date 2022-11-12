@@ -4,6 +4,7 @@ package lesson6.task1
 
 import lesson2.task2.daysInMonth
 import java.lang.StringBuilder
+import kotlin.math.pow
 
 // Урок 6: разбор строк, исключения
 // Максимальное количество баллов = 13
@@ -222,41 +223,13 @@ fun bestHighJump(jumps: String): Int {
  * Про нарушении формата входной строки бросить исключение IllegalArgumentException
  */
 fun plusMinus(expression: String): Int {
-    val h = "+-"
-    val chiffre = StringBuilder()
-    val setChiffres = mutableListOf<Int>()
-    val setPM = mutableListOf<String>()
-    var chiffreCount = 0
-    var expressionCount = 0
-    if (expression.isNullOrEmpty()) throw IllegalArgumentException()
-    for (i in expression) {
-        if (!((i in '0'..'9') || (i in h) || (i == ' '))) throw IllegalArgumentException()
-        if (i in '0'..'9') {
-            chiffre.append(i)
-            expressionCount = 0
-        }
-        if ((i == ' ') && (chiffre.isNotEmpty())) {
-            setChiffres.add(chiffre.toString().toInt())
-            chiffreCount += 1
-            chiffre.clear()
-        }
-        if ((i in h) && (setChiffres.size != 0)) {
-            setPM.add(i.toString())
-            chiffreCount = 0
-            expressionCount += 1
-        } else if ((i in h) && (setChiffres.size == 0)) throw IllegalArgumentException()
-        if ((chiffreCount > 1) || (expressionCount > 1)) throw IllegalArgumentException()
-    }
-    if (chiffre.isNotEmpty()) {
-        setChiffres.add(chiffre.toString().toInt())
-        chiffreCount += 1
-    } else throw IllegalArgumentException()
-    if ((chiffreCount > 1) || (expressionCount > 1) || (expressionCount > chiffreCount)) throw IllegalArgumentException()
-    var result = setChiffres[0]
-    setPM.add(" ")
-    for (i in 1 until setChiffres.size) {
-        if (setPM[i - 1] == "+") result += setChiffres[i]
-        if (setPM[i - 1] == "-") result -= setChiffres[i]
+    if (!Regex("""(([0-9]+ (\+|-) )*[0-9]+)""").matches(expression)) throw IllegalArgumentException()
+    val listOfNumbers = expression.split(" ").filter { it.matches(Regex("[0-9]+")) }
+    val listOfPlusMinus = expression.split(" ").filter { it.matches(Regex("(\\+|-)")) }
+    var result = listOfNumbers[0].toInt()
+    for (i in 0 until listOfPlusMinus.size) {
+        if (listOfPlusMinus[i] == "+") result += listOfNumbers[i + 1].toInt()
+        if (listOfPlusMinus[i] == "-") result -= listOfNumbers[i + 1].toInt()
     }
     return result
 }
@@ -299,7 +272,21 @@ fun firstDuplicateIndex(str: String): Int {
  * или пустую строку при нарушении формата строки.
  * Все цены должны быть больше нуля либо равны нулю.
  */
-fun mostExpensive(description: String): String = TODO()
+fun mostExpensive(description: String): String {
+    if (!Regex("""(([А-яёЁ])+ [0-9]+(\.[0-9]); )*(([А-яёЁ])+ [0-9]+(\.[0-9]))""").matches(description)) return ""
+    val products = description.split(Regex(" [0-9]+(\\.[0-9])\\;*")).filter { it.isNotBlank() }
+    val prices = description.split(Regex("(; )*[А-яёЁ]+ ")).filter { it.isNotBlank() }
+    var result = String()
+    var maximum = 0.0
+    for (i in 0 until prices.size) {
+        if (prices[i].toDouble() < 0) return ""
+        else if (prices[i].toDouble() > maximum) {
+            maximum = prices[i].toDouble()
+            result = products[i].trim()
+        }
+    }
+    return result
+}
 
 /**
  * Сложная (6 баллов)
@@ -312,7 +299,55 @@ fun mostExpensive(description: String): String = TODO()
  *
  * Вернуть -1, если roman не является корректным римским числом
  */
-fun fromRoman(roman: String): Int = TODO()
+fun fromRoman(roman: String): Int {
+    if (!Regex("""(M{0,3})(C?M?)(D?)(C?D?)(C{0,3})(X?C?)(L?)(X?L?)(X{0,3})(I?X?)(V?)(I?V?)(I{0,3})""").matches(roman)) return -1
+    if (Regex("""(M{4,}|D{4,}|C{4,}|L{4,}|X{4,}|V{4,}|I{4,})""").matches(roman)) return -1
+    val roman1 = setOf("I", "X", "C", "M")
+    val roman5 = setOf("V", "L", "D")
+    val roman4 = setOf("IV", "XL", "CD")
+    val roman9 = setOf("IX", "XC", "CM")
+    var result = 0
+    var isSecondDigitUsed = false
+    for (i in 0 until roman.length) {
+        if (i + 1 != roman.length) {
+            val possibleNumber = roman[i].toString() + roman[i + 1]
+            when {
+                (((possibleNumber) in roman4) && (!isSecondDigitUsed)) -> {
+                    result += 4 * (10.0.pow(roman4.indexOf(possibleNumber).toDouble())).toInt()
+                    isSecondDigitUsed = true
+                }
+
+                (((possibleNumber) in roman9) && (!isSecondDigitUsed)) -> {
+                    result += 9 * (10.0.pow(roman9.indexOf(possibleNumber).toDouble())).toInt()
+                    isSecondDigitUsed = true
+                }
+
+                (((roman[i].toString()) in roman1) && (!isSecondDigitUsed)) -> {
+                    result += 10.0.pow(roman1.indexOf(roman[i].toString()).toDouble()).toInt()
+                    isSecondDigitUsed = false
+                }
+
+                (((roman[i].toString()) in roman5) && (!isSecondDigitUsed)) -> {
+                    result += 5 * (10.0.pow(roman5.indexOf(roman[i].toString()).toDouble())).toInt()
+                    isSecondDigitUsed = false
+                }
+
+                (isSecondDigitUsed) -> isSecondDigitUsed = false
+            }
+        } else when {
+            ((roman[i].toString() in roman1) && (!isSecondDigitUsed)) -> {
+                result += 10.0.pow(roman1.indexOf(roman[i].toString()).toDouble()).toInt()
+                isSecondDigitUsed = false
+            }
+
+            (((roman[i].toString()) in roman5) && (!isSecondDigitUsed)) -> {
+                result += 5 * (10.0.pow(roman5.indexOf(roman[i].toString()).toDouble())).toInt()
+                isSecondDigitUsed = false
+            }
+        }
+    }
+    return result
+}
 
 /**
  * Очень сложная (7 баллов)
