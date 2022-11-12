@@ -277,7 +277,7 @@ fun mostExpensive(description: String): String {
     val products = description.split(Regex(" [0-9]+(\\.[0-9])\\;*")).filter { it.isNotBlank() }
     val prices = description.split(Regex("(; )*[А-яёЁ]+ ")).filter { it.isNotBlank() }
     var result = String()
-    var maximum = 0.0
+    var maximum = Double.NEGATIVE_INFINITY
     for (i in 0 until prices.size) {
         if (prices[i].toDouble() < 0) return ""
         else if (prices[i].toDouble() > maximum) {
@@ -285,7 +285,8 @@ fun mostExpensive(description: String): String {
             result = products[i].trim()
         }
     }
-    return result
+    return if (maximum != Double.NEGATIVE_INFINITY) result
+    else return ""
 }
 
 /**
@@ -300,8 +301,9 @@ fun mostExpensive(description: String): String {
  * Вернуть -1, если roman не является корректным римским числом
  */
 fun fromRoman(roman: String): Int {
-    if (!Regex("""(M{0,3})(C?M?)(D?)(C?D?)(C{0,3})(X?C?)(L?)(X?L?)(X{0,3})(I?X?)(V?)(I?V?)(I{0,3})""").matches(roman)) return -1
+    if (!Regex("""(M{0,3}C?M?D?C?D?C{0,3}X?C?L?X?L?X{0,3}I?X?V?I?V?I{0,3})""").matches(roman)) return -1
     if (Regex("""(M{4,}|D{4,}|C{4,}|L{4,}|X{4,}|V{4,}|I{4,})""").matches(roman)) return -1
+    if (roman.isBlank()) return -1
     val roman1 = setOf("I", "X", "C", "M")
     val roman5 = setOf("V", "L", "D")
     val roman4 = setOf("IV", "XL", "CD")
