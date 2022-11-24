@@ -3,7 +3,8 @@
 package lesson6.task1
 
 import lesson2.task2.daysInMonth
-import java.lang.StringBuilder
+import kotlin.math.pow
+import kotlin.text.StringBuilder
 
 // Урок 6: разбор строк, исключения
 // Максимальное количество баллов = 13
@@ -77,32 +78,26 @@ fun main() {
  * Обратите внимание: некорректная с точки зрения календаря дата (например, 30.02.2009) считается неверными
  * входными данными.
  */
+val monthList = listOf(
+    "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября",
+    "декабря"
+)
+
 fun dateStrToDigit(str: String): String {
     val parts = str.split(" ")
     if (parts.size != 3) return ""
     val number: Int
-    val part = parts[1]
-    number = when {
-        (part == "января") -> 1
-        (part == "февраля") -> 2
-        (part == "марта") -> 3
-        (part == "апреля") -> 4
-        (part == "мая") -> 5
-        (part == "июня") -> 6
-        (part == "июля") -> 7
-        (part == "августа") -> 8
-        (part == "сентября") -> 9
-        (part == "октября") -> 10
-        (part == "ноября") -> 11
-        (part == "декабря") -> 12
-        else -> return ""
-    }
+    val month = parts[1]
+    val day = parts[0].toIntOrNull()
+    val year = parts[2].toIntOrNull()
+    if (month in monthList) number = monthList.indexOf(month) + 1 else return ""
     return when {
-        (parts[0].toInt() == 0) || (parts[2].toInt() == 0) -> ""
-        parts[0].toInt() > daysInMonth(number, parts[2].toInt()) -> ""
+        converter(parts, day, year, month).isEmpty() -> ""
+        day!! > daysInMonth(number, year!!) -> ""
         else -> (String.format("%02d.%02d.%d", parts[0].toInt(), number, parts[2].toInt()))
     }
 }
+
 
 /**
  * Средняя (4 балла)
@@ -114,31 +109,27 @@ fun dateStrToDigit(str: String): String {
  * Обратите внимание: некорректная с точки зрения календаря дата (например, 30 февраля 2009) считается неверными
  * входными данными.
  */
+
 fun dateDigitToStr(digital: String): String {
     val parts = digital.split(".")
     if (parts.size != 3) return ""
     val number = StringBuilder()
     val part = parts[1]
-    when {
-        (part == "01") -> number.append("января")
-        (part == "02") -> number.append("февраля")
-        (part == "03") -> number.append("марта")
-        (part == "04") -> number.append("апреля")
-        (part == "05") -> number.append("мая")
-        (part == "06") -> number.append("июня")
-        (part == "07") -> number.append("июля")
-        (part == "08") -> number.append("августа")
-        (part == "09") -> number.append("сентября")
-        (part == "10") -> number.append("октября")
-        (part == "11") -> number.append("ноября")
-        (part == "12") -> number.append("декабря")
-        else -> return ""
-    }
+
+    val day = parts[0].toIntOrNull()
+    val year = parts[2].toIntOrNull()
+    val listForMonthNumbers = listOf("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
+    if (part in listForMonthNumbers) number.append(monthList[listForMonthNumbers.indexOf(part)]) else return ""
     return when {
-        (parts[0].toInt() == 0) || (parts[2].toInt() == 0) -> ""
-        parts[0].toInt() > daysInMonth(part.toInt(), parts[2].toInt()) -> ""
-        else -> String.format("%d $number %d", parts[0].toInt(), parts[2].toInt())
+        converter(parts, day, year, part).isEmpty() -> ""
+        day!! > daysInMonth(part.toInt(), year!!) -> ""
+        else -> String.format("%d $number %d", day, year)
     }
+}
+
+private fun converter(parts: List<String>, day: Int?, year: Int?, part: String): String {
+    return if ((day == null) || (year == null) || ((day <= 0) || (year <= 0))) ""
+    else "all Fine"
 }
 
 /**
@@ -156,19 +147,25 @@ fun dateDigitToStr(digital: String): String {
  * PS: Дополнительные примеры работы функции можно посмотреть в соответствующих тестах.
  */
 fun flattenPhoneNumber(phone: String): String {
-    val s = "+-() "
-    val c = "1234567890"
+    val mySymbols = "+-() "
     var plus = false
+    var isBraceNumberCorrect2 = 0
+    var isBraceNumberCorrect3 = 0
     val result = StringBuilder()
     for (i in 0 until phone.length) {
-        if (phone[i] == s[0]) {
+        if (phone[i] == mySymbols[2]) isBraceNumberCorrect2 += 1
+        if (phone[i] == mySymbols[3]) isBraceNumberCorrect3 += 1
+        if (phone[i] == mySymbols[0]) {
+            if (plus) return ""
             plus = true
             if (result.isNotEmpty()) return ""
         }
-        if (!((phone[i] in s) || (phone[i] in c))) return ""
-        if (((phone[i] == s[0]) || (phone[i] == s[2])) && (phone.length > 1)) if (phone[i + 1] !in c) return ""
-        if (phone[i] in c) result.append(phone[i])
+        if (!((phone[i] in mySymbols) || (phone[i] in '0'..'9'))) return ""
+        if (((phone[i] == mySymbols[0]) || (phone[i] == mySymbols[2])) && (phone.length > 1))
+            if (phone[i + 1] !in '0'..'9') return ""
+        if (phone[i] in '0'..'9') result.append(phone[i])
     }
+    if (isBraceNumberCorrect2 != isBraceNumberCorrect3) return ""
     if ((plus) && (result.isNotEmpty())) return ("+${result}")
     else if (plus) return ("")
     return if (!(plus)) result.toString()
@@ -186,16 +183,12 @@ fun flattenPhoneNumber(phone: String): String {
  * При нарушении формата входной строки или при отсутствии в ней чисел, вернуть -1.
  */
 fun bestLongJump(jumps: String): Int {
-    val s = " %-"
-    val c = "1234567890"
+    val jumpings = jumps.split(" ")
+    val mySymbols = " %-"
     var maximum = 0
-    val res = StringBuilder()
-    for (ch in jumps) {
-        if (!((ch in s) || (ch in c))) return -1
-        if (ch in c) {
-            res.append(ch)
-            if (res.toString().toInt() > maximum) maximum = res.toString().toInt()
-        } else res.clear()
+    for (jump in jumpings) {
+        if (jump.toIntOrNull() is Int) if (jump.toInt() > maximum) maximum = jump.toInt()
+        for (i in jump) if ((i !in mySymbols) && (i !in '0'..'9')) return -1
     }
     if (maximum == 0) return -1
     return maximum
@@ -213,21 +206,19 @@ fun bestLongJump(jumps: String): Int {
  * вернуть -1.
  */
 fun bestHighJump(jumps: String): Int {
-    val jump = jumps.removeRange(jumps.length - 2, jumps.length) //новая строка нужна для перебора символов в ней
-    val s = " %"                                                       //и стравнением jumps[ch + 2] с (+ и -)
-    val k = "-+"
-    val c = "1234567890"
-    var maximum = 0
-    val res = StringBuilder()
-    for (ch in jump.indices) {
-        val symbol = jumps[ch + 2]
-        if (!((jump[ch] in s) || (jump[ch] in c) || (jump[ch] in k))) return -1
-        if (jump[ch] in c) {
-            res.append(jump[ch])
-            if ((res.toString().toInt() > maximum) && (symbol in k)) maximum = res.toString().toInt()
-        } else res.clear()
+    for (j in jumps) if (!((j in '0'..'9') || (j in " +-%"))) return -1
+    if (!Regex("""(\d+ (%{0,2}(-|\+|()))\s?)+""").matches(jumps)) return -1
+    val goodJumps = jumps.split(Regex("""\d+ \%+-*+""")).filter { it.length >= 3 }
+    var maximum = -1                    //3, потому что в условии хороший прыжок состоит из числа, пробела и символа +
+    val height = StringBuilder()
+    for (jump in goodJumps) {
+        for (i in jump) {
+            if (i in '0'..'9') {
+                height.append(i)
+                if (height.toString().toInt() > maximum) maximum = height.toString().toInt()
+            } else height.clear()
+        }
     }
-    if (maximum == 0) return -1
     return maximum
 }
 
@@ -241,42 +232,13 @@ fun bestHighJump(jumps: String): Int {
  * Про нарушении формата входной строки бросить исключение IllegalArgumentException
  */
 fun plusMinus(expression: String): Int {
-    val s = "1234567890"
-    val h = "+-"
-    val chiffre = StringBuilder()
-    val setChiffres = mutableListOf<Int>()
-    val setPM = mutableListOf<String>()
-    var chiffreCount = 0
-    var expressionCount = 0
-    if (expression.isNullOrEmpty()) throw IllegalArgumentException()
-    for (i in expression) {
-        if (!((i in s) || (i in h) || (i.toString() == " "))) throw IllegalArgumentException()
-        if (i in s) {
-            chiffre.append(i)
-            expressionCount = 0
-        }
-        if ((i.toString() == " ") && (chiffre.isNotEmpty())) {
-            setChiffres.add(chiffre.toString().toInt())
-            chiffreCount += 1
-            chiffre.clear()
-        }
-        if ((i in h) && (setChiffres.size != 0)) {
-            setPM.add(i.toString())
-            chiffreCount = 0
-            expressionCount += 1
-        } else if ((i in h) && (setChiffres.size == 0)) throw IllegalArgumentException()
-        if ((chiffreCount > 1) || (expressionCount > 1)) throw IllegalArgumentException()
-    }
-    if (chiffre.isNotEmpty()) {
-        setChiffres.add(chiffre.toString().toInt())
-        chiffreCount += 1
-    }
-    if ((chiffreCount > 1) || (expressionCount > 1)) throw IllegalArgumentException()
-    var result = setChiffres[0]
-    setPM.add(" ")
-    for (i in 1 until setChiffres.size) {
-        if (setPM[i - 1] == "+") result += setChiffres[i]
-        if (setPM[i - 1] == "-") result -= setChiffres[i]
+    if (!Regex("""(([0-9]+ (\+|-) )*[0-9]+)""").matches(expression)) throw IllegalArgumentException()
+    val listOfNumbers = expression.split(" ").filter { it.matches(Regex("[0-9]+")) }
+    val listOfPlusMinus = expression.split(" ").filter { it.matches(Regex("(\\+|-)")) }
+    var result = listOfNumbers[0].toInt()
+    for (i in 0 until listOfPlusMinus.size) {
+        if (listOfPlusMinus[i] == "+") result += listOfNumbers[i + 1].toInt()
+        if (listOfPlusMinus[i] == "-") result -= listOfNumbers[i + 1].toInt()
     }
     return result
 }
@@ -290,7 +252,23 @@ fun plusMinus(expression: String): Int {
  * Вернуть индекс начала первого повторяющегося слова, или -1, если повторов нет.
  * Пример: "Он пошёл в в школу" => результат 9 (индекс первого 'в')
  */
-fun firstDuplicateIndex(str: String): Int = TODO()
+fun firstDuplicateIndex(str: String): Int {
+    val sets = str.lowercase().split(" ")
+    var setOne = sets[0]
+    var index = setOne.length
+    var isThereDouble = false
+    if (sets.size == 1) return -1
+    for (i in 1 until sets.size) {
+        if (setOne == sets[i]) {
+            index -= sets[i].length
+            isThereDouble = true
+            break
+        }
+        index += sets[i].length + 1
+        setOne = sets[i]
+    }
+    return if (isThereDouble) index else -1
+}
 
 /**
  * Сложная (6 баллов)
@@ -303,7 +281,20 @@ fun firstDuplicateIndex(str: String): Int = TODO()
  * или пустую строку при нарушении формата строки.
  * Все цены должны быть больше нуля либо равны нулю.
  */
-fun mostExpensive(description: String): String = TODO()
+fun mostExpensive(description: String): String {
+    if (!Regex("""(\S+\s[0-9]+(.[0-9]*)?; )*(\S+\s[0-9]+(.[0-9]*)?)""").matches(description)) return ""
+    val productAndPrice = description.split(Regex("(; )|( )"))
+    var result = ""
+    var maximum = Double.NEGATIVE_INFINITY
+    for (i in 0 until productAndPrice.size step 2) {
+        if (productAndPrice[i + 1].toDouble() > maximum) {
+            maximum = productAndPrice[i + 1].toDouble()
+            result = productAndPrice[i]
+        }
+    }
+    return if (maximum != Double.NEGATIVE_INFINITY) result
+    else return ""
+}
 
 /**
  * Сложная (6 баллов)
@@ -316,7 +307,56 @@ fun mostExpensive(description: String): String = TODO()
  *
  * Вернуть -1, если roman не является корректным римским числом
  */
-fun fromRoman(roman: String): Int = TODO()
+fun fromRoman(roman: String): Int {
+    if (!Regex("""^M{0,3}(CM|CD|D?C{0,3})?(XC|XL|L?X{0,3})?(IX|IV|V?I{0,3})?$""").matches(roman)) return -1
+    if (roman.isBlank()) return -1
+    val roman1 = setOf("I", "X", "C", "M")
+    val roman5 = setOf("V", "L", "D")
+    val roman4 = setOf("IV", "XL", "CD")
+    val roman9 = setOf("IX", "XC", "CM")
+    var result = 0
+    var isSecondDigitUsed = false
+    for (i in 0 until roman.length) {
+        val power1or5 = roman[i].toString()
+        if (i + 1 != roman.length) {
+            val possibleNumber = (roman[i].toString() + roman[i + 1])
+            when {
+                (((possibleNumber) in roman4) && (!isSecondDigitUsed)) -> {
+                    result += 4 * (10.0.pow(roman4.indexOf(possibleNumber).toDouble())).toInt()
+                    isSecondDigitUsed = true
+                }
+
+                (((possibleNumber) in roman9) && (!isSecondDigitUsed)) -> {
+                    result += 9 * (10.0.pow(roman9.indexOf(possibleNumber).toDouble())).toInt()
+                    isSecondDigitUsed = true
+                }
+
+                (((roman[i].toString()) in roman1) && (!isSecondDigitUsed)) -> {
+                    result += 10.0.pow(roman1.indexOf(power1or5).toDouble()).toInt()
+                    isSecondDigitUsed = false
+                }
+
+                (((roman[i].toString()) in roman5) && (!isSecondDigitUsed)) -> {
+                    result += 5 * (10.0.pow(roman5.indexOf(power1or5).toDouble())).toInt()
+                    isSecondDigitUsed = false
+                }
+
+                (isSecondDigitUsed) -> isSecondDigitUsed = false
+            }
+        } else when {
+            ((roman[i].toString() in roman1) && (!isSecondDigitUsed)) -> {
+                result += 10.0.pow(roman1.indexOf(power1or5).toDouble()).toInt()
+                isSecondDigitUsed = false
+            }
+
+            (((roman[i].toString()) in roman5) && (!isSecondDigitUsed)) -> {
+                result += 5 * (10.0.pow(roman5.indexOf(power1or5).toDouble())).toInt()
+                isSecondDigitUsed = false
+            }
+        }
+    }
+    return result
+}
 
 /**
  * Очень сложная (7 баллов)

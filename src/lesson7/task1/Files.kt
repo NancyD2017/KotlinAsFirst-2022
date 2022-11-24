@@ -3,6 +3,8 @@
 package lesson7.task1
 
 import java.io.File
+import java.io.FileWriter
+import java.lang.StringBuilder
 
 // Урок 7: работа с файлами
 // Урок интегральный, поэтому его задачи имеют сильно увеличенную стоимость
@@ -22,35 +24,36 @@ import java.io.File
  * их следует сохранить и в выходном файле
  */
 fun alignFile(inputName: String, lineLength: Int, outputName: String) {
-    val writer = File(outputName).bufferedWriter()
+    val writer = FileWriter(outputName)
     var currentLineLength = 0
-    fun append(word: String) {
-        if (currentLineLength > 0) {
-            if (word.length + currentLineLength >= lineLength) {
-                writer.newLine()
-                currentLineLength = 0
-            } else {
-                writer.write(" ")
-                currentLineLength++
-            }
-        }
-        writer.write(word)
-        currentLineLength += word.length
-    }
-    for (line in File(inputName).readLines()) {
-        if (line.isEmpty()) {
-            writer.newLine()
+    writer.use {
+        fun append(word: String) {
             if (currentLineLength > 0) {
-                writer.newLine()
-                currentLineLength = 0
+                if (word.length + currentLineLength >= lineLength) {
+                    writer.write("\n")
+                    currentLineLength = 0
+                } else {
+                    writer.write(" ")
+                    currentLineLength++
+                }
             }
-            continue
+            writer.write(word)
+            currentLineLength += word.length
         }
-        for (word in line.split(Regex("\\s+"))) {
-            append(word)
+        for (line in File(inputName).readLines()) {
+            if (line.isEmpty()) {
+                writer.write("\n")
+                if (currentLineLength > 0) {
+                    writer.write("\n")
+                    currentLineLength = 0
+                }
+                continue
+            }
+            for (word in line.split(Regex("\\s+"))) {
+                append(word)
+            }
         }
     }
-    writer.close()
 }
 
 /**
@@ -63,7 +66,17 @@ fun alignFile(inputName: String, lineLength: Int, outputName: String) {
  * Подчёркивание в середине и/или в конце строк значения не имеет.
  */
 fun deleteMarked(inputName: String, outputName: String) {
-    TODO()
+    val writer = FileWriter(outputName)
+    writer.use {
+        for (line in File(inputName).readLines()) {
+            if (line.isNotEmpty()) {
+                if (line[0] != '_') {
+                    writer.write(line)
+                    writer.write("\n")
+                }
+            } else writer.write("\n")
+        }
+    }
 }
 
 /**
@@ -75,7 +88,18 @@ fun deleteMarked(inputName: String, outputName: String) {
  * Регистр букв игнорировать, то есть буквы е и Е считать одинаковыми.
  *
  */
-fun countSubstrings(inputName: String, substrings: List<String>): Map<String, Int> = TODO()
+fun countSubstrings(inputName: String, substrings: List<String>): Map<String, Int> {
+    val result = mutableMapOf<String, Int>()
+    val tInInputName = File(inputName).readText().lowercase()
+    for (word in substrings) {
+        val w = word.lowercase()
+        result[word] = 0
+        for (each in tInInputName.windowed(w.length)) {
+            if (each == w) result[word] = result[word]!! + 1
+        }
+    }
+    return result
+}
 
 
 /**
@@ -92,7 +116,23 @@ fun countSubstrings(inputName: String, substrings: List<String>): Map<String, In
  *
  */
 fun sibilants(inputName: String, outputName: String) {
-    TODO()
+    val writer = FileWriter(outputName)
+    val right = mapOf('ы' to 'и', 'Ы' to 'И', 'ю' to 'у', 'Ю' to 'У', 'я' to 'а', 'Я' to 'А')
+    val toughs = "жчшщЖЧШЩ"
+    writer.use {
+        for (line in File(inputName).readLines()) {
+            for (i in 0 until line.length) {
+                val mistake = line[i]
+                if (i > 0) {
+                    when {
+                        ((line[i - 1] in toughs) && (line[i] in "ыЫюЮяЯ")) -> writer.write(right[mistake].toString())
+                        else -> writer.write(line[i].toString())
+                    }
+                } else writer.write(mistake.toString())
+            }
+            writer.write("\n")
+        }
+    }
 }
 
 /**
@@ -113,7 +153,21 @@ fun sibilants(inputName: String, outputName: String) {
  *
  */
 fun centerFile(inputName: String, outputName: String) {
-    TODO()
+    val writer = FileWriter(outputName)
+    var maxLen = 0
+    val lines = mutableListOf<String>()
+    lines.addAll(File(inputName).readLines())
+    for (line in lines) if (line.trim().length > maxLen) maxLen = line.trim().length
+    writer.use {
+        for (line in lines) {
+            val t = line.trim()
+            if (t.length < maxLen) {
+                writer.write(" ".repeat((maxLen - t.length) / 2))
+                writer.write(t)
+            } else writer.write(t)
+            writer.write("\n")
+        }
+    }
 }
 
 /**
@@ -144,7 +198,53 @@ fun centerFile(inputName: String, outputName: String) {
  * 8) Если входной файл удовлетворяет требованиям 1-7, то он должен быть в точности идентичен выходному файлу
  */
 fun alignFileByWidth(inputName: String, outputName: String) {
-    TODO()
+    val writer = FileWriter(outputName)
+    var maxLen = 0                //нужен для определения максимальной длины строки с "нормальным" количеством пробелов
+    val newLine = StringBuilder() //для каждой строки из текста строит строку с "нормальным" количеством пробелов
+    val text = StringBuilder()    //строит текст из newLine-ов
+    val spaceCountByLineList = mutableListOf<Int>() //ищет "нормальное" количество пробелов для строк
+    var spacesCount = 0                 //ищет "нормальное" количество пробелов в одной строке
+    for (line in File(inputName).readLines()) {
+        for (i in 0 until line.length) {
+            if (i + 1 < line.length) {
+                if (!((line[i] == line[i + 1]) && (line[i] == ' '))) newLine.append(line[i])
+            } else newLine.append(line[line.length - 1])
+        }
+        if (newLine.trim().length > maxLen) maxLen = newLine.trim().length
+        text.append("${newLine.trim()}\n")
+        for (i in 0 until newLine.trim().length) if (newLine.trim()[i] == ' ') spacesCount++
+        newLine.clear()
+        spaceCountByLineList.add(spacesCount)
+        spacesCount = 0
+    }
+    writer.use {
+        val textByLines = text.toString().split("\n")                              //делит text на строки
+        for ((lineNumber, line) in textByLines.withIndex()) {
+            if (line.length < maxLen) {
+                var spacesLeft =
+                    maxLen - line.length                               //считает недостаток пробелов в строке
+                spacesCount =
+                    if (spaceCountByLineList.size > lineNumber) spaceCountByLineList[lineNumber] else 0   //считает недостающее количество пробелов для каждой из строк
+                val spacesNumber =
+                    if (spacesCount > 0) spacesLeft / spacesCount else 0 //считает, на сколько пробелов нужно заменить каждый из пробелов
+                for (i in line.indices) {
+                    if ((line[i] == ' ') && (spacesLeft > 0)) {
+                        if (spacesNumber * spacesCount < spacesLeft) {
+                            writer.write(" ".repeat(spacesNumber + 2))              //добавляет к spacesNumber один
+                            spacesLeft -= (spacesNumber + 1)                           //пробел который был и один,
+                            spacesCount -= 1                                           // образовавшийся из-за остатка
+                        } else {
+                            writer.write(" ".repeat(spacesNumber + 1))              //добавляет к spacesNumber один
+                            spacesLeft -= spacesNumber                                 //пробел который был
+                            spacesCount -= 1
+                        }
+                    } else if ((line[i] == ' ') && (spacesLeft == 0)) writer.write(" ") //оставляет по 1 пробелу, когда это нужно
+                    else writer.write(line[i].toString())                                   //или записывает непробельный символ line[i]
+                }
+            } else writer.write(line)                       //если у строки maxLen то она не изменяется
+            if (textByLines.size - 1 != lineNumber) writer.write("\n")//переходит на новую строку всегда, кроме самой последней строки
+        }
+    }
 }
 
 /**
@@ -233,7 +333,28 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
  * Обратите внимание: данная функция не имеет возвращаемого значения
  */
 fun chooseLongestChaoticWord(inputName: String, outputName: String) {
-    TODO()
+    val setOfLongestChaoticWord = mutableSetOf<Char>()
+    val listOfLongestChaoticWord = mutableListOf<Char>()
+    val writer = FileWriter(outputName)
+    val s = StringBuilder()
+    var maxLen = 0
+    var isLetterSame = false
+    for (line in File(inputName).readLines()) {
+        val l = line.lowercase()
+        listOfLongestChaoticWord.clear()
+        listOfLongestChaoticWord.addAll(l.toList())
+        setOfLongestChaoticWord.addAll(l.toSet())
+        if (setOfLongestChaoticWord.size != listOfLongestChaoticWord.size) isLetterSame = true
+        if ((setOfLongestChaoticWord.size > maxLen) && (!(isLetterSame))) {
+            maxLen = setOfLongestChaoticWord.size
+            s.clear().append(line)
+        } else if ((setOfLongestChaoticWord.size == maxLen) && (!(isLetterSame))) {
+            s.append(", $line")
+        }
+        setOfLongestChaoticWord.clear()
+        isLetterSame = false
+    }
+    writer.use { writer.write(s.toString()) }
 }
 
 /**
@@ -268,15 +389,15 @@ Suspendisse ~~et elit in enim tempus iaculis~~.
  *
  * Соответствующий выходной файл:
 <html>
-    <body>
-        <p>
-            Lorem ipsum <i>dolor sit amet</i>, consectetur <b>adipiscing</b> elit.
-            Vestibulum lobortis. <s>Est vehicula rutrum <i>suscipit</i></s>, ipsum <s>lib</s>ero <i>placerat <b>tortor</b></i>.
-        </p>
-        <p>
-            Suspendisse <s>et elit in enim tempus iaculis</s>.
-        </p>
-    </body>
+<body>
+<p>
+Lorem ipsum <i>dolor sit amet</i>, consectetur <b>adipiscing</b> elit.
+Vestibulum lobortis. <s>Est vehicula rutrum <i>suscipit</i></s>, ipsum <s>lib</s>ero <i>placerat <b>tortor</b></i>.
+</p>
+<p>
+Suspendisse <s>et elit in enim tempus iaculis</s>.
+</p>
+</body>
 </html>
  *
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
@@ -319,65 +440,65 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
  *
  * Пример входного файла:
 ///////////////////////////////начало файла/////////////////////////////////////////////////////////////////////////////
-* Утка по-пекински
-    * Утка
-    * Соус
-* Салат Оливье
-    1. Мясо
-        * Или колбаса
-    2. Майонез
-    3. Картофель
-    4. Что-то там ещё
-* Помидоры
-* Фрукты
-    1. Бананы
-    23. Яблоки
-        1. Красные
-        2. Зелёные
+ * Утка по-пекински
+ * Утка
+ * Соус
+ * Салат Оливье
+1. Мясо
+ * Или колбаса
+2. Майонез
+3. Картофель
+4. Что-то там ещё
+ * Помидоры
+ * Фрукты
+1. Бананы
+23. Яблоки
+1. Красные
+2. Зелёные
 ///////////////////////////////конец файла//////////////////////////////////////////////////////////////////////////////
  *
  *
  * Соответствующий выходной файл:
 ///////////////////////////////начало файла/////////////////////////////////////////////////////////////////////////////
 <html>
-  <body>
-    <p>
-      <ul>
-        <li>
-          Утка по-пекински
-          <ul>
-            <li>Утка</li>
-            <li>Соус</li>
-          </ul>
-        </li>
-        <li>
-          Салат Оливье
-          <ol>
-            <li>Мясо
-              <ul>
-                <li>Или колбаса</li>
-              </ul>
-            </li>
-            <li>Майонез</li>
-            <li>Картофель</li>
-            <li>Что-то там ещё</li>
-          </ol>
-        </li>
-        <li>Помидоры</li>
-        <li>Фрукты
-          <ol>
-            <li>Бананы</li>
-            <li>Яблоки
-              <ol>
-                <li>Красные</li>
-                <li>Зелёные</li>
-              </ol>
-            </li>
-          </ol>
-        </li>
-      </ul>
-    </p>
-  </body>
+<body>
+<p>
+<ul>
+<li>
+Утка по-пекински
+<ul>
+<li>Утка</li>
+<li>Соус</li>
+</ul>
+</li>
+<li>
+Салат Оливье
+<ol>
+<li>Мясо
+<ul>
+<li>Или колбаса</li>
+</ul>
+</li>
+<li>Майонез</li>
+<li>Картофель</li>
+<li>Что-то там ещё</li>
+</ol>
+</li>
+<li>Помидоры</li>
+<li>Фрукты
+<ol>
+<li>Бананы</li>
+<li>Яблоки
+<ol>
+<li>Красные</li>
+<li>Зелёные</li>
+</ol>
+</li>
+</ol>
+</li>
+</ul>
+</p>
+</body>
 </html>
 ///////////////////////////////конец файла//////////////////////////////////////////////////////////////////////////////
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
@@ -404,23 +525,23 @@ fun markdownToHtml(inputName: String, outputName: String) {
  * Вывести в выходной файл процесс умножения столбиком числа lhv (> 0) на число rhv (> 0).
  *
  * Пример (для lhv == 19935, rhv == 111):
-   19935
-*    111
+19935
+ *    111
 --------
-   19935
+19935
 + 19935
 +19935
 --------
- 2212785
+2212785
  * Используемые пробелы, отступы и дефисы должны в точности соответствовать примеру.
  * Нули в множителе обрабатывать так же, как и остальные цифры:
-  235
-*  10
+235
+ *  10
 -----
-    0
+0
 +235
 -----
- 2350
+2350
  *
  */
 fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
@@ -434,16 +555,16 @@ fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
  * Вывести в выходной файл процесс деления столбиком числа lhv (> 0) на число rhv (> 0).
  *
  * Пример (для lhv == 19935, rhv == 22):
-  19935 | 22
- -198     906
- ----
-    13
-    -0
-    --
-    135
-   -132
-   ----
-      3
+19935 | 22
+-198     906
+----
+13
+-0
+--
+135
+-132
+----
+3
 
  * Используемые пробелы, отступы и дефисы должны в точности соответствовать примеру.
  *

@@ -2,7 +2,6 @@
 
 package lesson5.task1
 
-import lesson3.task1.factorial
 import java.lang.StringBuilder
 import kotlin.math.pow
 
@@ -103,8 +102,8 @@ fun buildWordSet(text: List<String>): MutableSet<String> {
 fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
     val newGrades = mutableMapOf<Int, MutableList<String>>()
     for ((key, value) in grades) {
-        if (newGrades[value].isNullOrEmpty()) newGrades[value] = mutableListOf(key)
-        else newGrades[value]?.add(key)
+        if (newGrades[value] == null) newGrades[value] = mutableListOf(key)
+        else newGrades[value]!!.add(key)
     }
     return newGrades
 }
@@ -188,13 +187,19 @@ fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<S
  */
 fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Double> {
     val newPrices = mutableMapOf<String, Double>()
-    val nameCountPrice = mutableMapOf<String, Pair<Int, Double>>()
-    for ((key, value) in stockPrices) {
-        if (key !in nameCountPrice.keys) nameCountPrice[key] = Pair(stockPrices.count { it.first == key }, value)
-        else nameCountPrice[key] = Pair(stockPrices.count { it.first == key }, value + nameCountPrice[key]?.second!!)
+    val groupedStockPrice = stockPrices.groupBy { it.first }.mapValues { it.value }
+    for ((name, groups) in groupedStockPrice) {
+        var price: Double
+        for (each in groups) {
+            if (name !in newPrices) newPrices[name] = each.second
+            else {
+                price = newPrices[name]!!
+                newPrices[name] = each.second + price
+            }
+        }
+        price = newPrices.get(name)!!
+        newPrices[name] = price / groups.size
     }
-    for ((key, value) in nameCountPrice)
-        if (key !in newPrices.keys) newPrices[key] = value.second / value.first
     return newPrices
 }
 
@@ -215,17 +220,20 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
  */
 fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): String? {
     val cheapGood = StringBuilder()
-    var minimum = 10.0.pow(10000)
+    var minimum: Double? = null
     for ((key, value) in stuff) {
-        if ((value.second < minimum) && (kind == value.first)) {
-            minimum = value.second
-            cheapGood.clear()
-            cheapGood.append(key)
+        if (kind == value.first) {
+            if ((minimum == null) || (value.second < minimum)) {
+                minimum = value.second
+                cheapGood.clear()
+                cheapGood.append(key)
+            }
         }
     }
-    return if (minimum != 10.0.pow(10000)) cheapGood.toString()
+    return if (minimum != null) cheapGood.toString()
     else null
 }
+
 
 /**
  * Средняя (3 балла)
@@ -237,10 +245,8 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *   canBuildFrom(listOf('a', 'b', 'o'), "baobab") -> true
  */
 fun canBuildFrom(chars: List<Char>, word: String): Boolean {
-    for (element in word) {
-        if ((element.uppercaseChar() !in chars) && (element.lowercaseChar() !in chars)) return false
-    }
-    return true
+    val symbol = word.toList()
+    return chars.containsAll(symbol)
 }
 
 /**
@@ -277,13 +283,12 @@ fun extractRepeats(list: List<String>): Map<String, Int> {
  *   hasAnagrams(listOf("тор", "свет", "рот")) -> true
  */
 fun hasAnagrams(words: List<String>): Boolean {
-    val list = mutableListOf<Char>()
-    val set = mutableSetOf<List<Char>>()
+    val variety = mutableSetOf<List<Char>>()
+    var variety2: MutableSet<List<Char>>
     for (word in words) {
-        for (i in word) list.add(i)
-        if (list.sorted() !in set) set.add(list.sorted())
-        else return true
-        list.clear()
+        variety2 = variety.toMutableSet()
+        variety.addAll(listOf(word.toList().sorted()))
+        if (variety == variety2) return true
     }
     return false
 }
@@ -323,26 +328,22 @@ fun hasAnagrams(words: List<String>): Boolean {
  *        )
  */
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
-    val mapFriends = mutableMapOf<String, MutableSet<String>>()
-    var i = 0
-    for ((key, value) in friends) if (key !in mapFriends.keys) mapFriends[key] = value.toMutableSet()
-    while (i < factorial(friends.keys.size)) {
-        for ((key, value) in friends) {
-            for (element in value) {
-                if ((element !in friends.keys) && (element.isNotEmpty())) {
-                    mapFriends[element] = mutableSetOf()
-                    i += 1
-                }
-                if (element in mapFriends.keys) {
-                    val kindaFriend = mapFriends[element].orEmpty()
-                    for (element in kindaFriend) {
-                        if ((element != key) && (element.isNotEmpty())) mapFriends[key]?.add(element)
-                        i += 1
-                    }
+    val mapFriends = friends.mapValues { it.value.toMutableSet() }.toMutableMap()
+    do {
+        val newFriends = mapFriends.toMutableMap()
+        for ((person, mates) in mapFriends) {
+            for (friend in mates) {
+                if (newFriends[friend].isNullOrEmpty()) {
+                    if (friend.isNotBlank()) newFriends[friend] = mutableSetOf()
+                } else {
+                    val newF = newFriends[friend]!!
+                    newFriends[person] = (newFriends[person]!! + newF - person).toMutableSet()
                 }
             }
         }
-    }
+        val fl = mapFriends != newFriends
+        mapFriends.putAll(newFriends)
+    } while (fl)
     return mapFriends
 }
 
@@ -364,12 +365,11 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
  *   findSumOfTwo(listOf(1, 2, 3), 6) -> Pair(-1, -1)
  */
 fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
-    for (i in 0 until list.size - 1)
-        for (j in 1 until list.size) {
-            if ((list[i] + list[j] == number) && (i != j)) {
-                return Pair(i, j)
-            }
-        }
+    for (i in 0 until list.size) {
+        var index = -1
+        if (i != list.indexOf(number - list[i])) index = list.indexOf(number - list[i])
+        if (index != -1) return Pair(i, index)
+    }
     return Pair(-1, -1)
 }
 
