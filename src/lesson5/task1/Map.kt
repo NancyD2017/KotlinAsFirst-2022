@@ -101,8 +101,8 @@ fun buildWordSet(text: List<String>): MutableSet<String> {
 fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
     val newGrades = mutableMapOf<Int, MutableList<String>>()
     for ((key, value) in grades) {
-        if (newGrades[value] == null) newGrades[value] = mutableListOf(key)
-        else newGrades[value]?.add(key)
+        if (value !in newGrades.keys) newGrades.getOrPut(value) { mutableListOf(key) }
+        else newGrades[value]!!.add(key)
     }
     return newGrades
 }
@@ -184,17 +184,8 @@ fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<S
  *   averageStockPrice(listOf("MSFT" to 100.0, "MSFT" to 200.0, "NFLX" to 40.0))
  *     -> mapOf("MSFT" to 150.0, "NFLX" to 40.0)
  */
-fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Double> {
-    val newPrices = mutableMapOf<String, Double>()
-    val nameCountPrice = mutableMapOf<String, Pair<Int, Double>>()
-    var value: Double
-    for (each in stockPrices) {
-        value = if (nameCountPrice[each.first]?.second == null) 0.0 else nameCountPrice[each.first]!!.second
-        nameCountPrice[each.first] = Pair(stockPrices.count { it.first == each.first }, each.second + value)
-    }
-    for ((key, value) in nameCountPrice) newPrices[key] = value.second / value.first
-    return newPrices
-}
+fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Double> =
+    stockPrices.groupBy({ it.first }, { it.second }).mapValues { it.value.sum() / it.value.size }
 
 /**
  * Средняя (4 балла)
@@ -213,17 +204,20 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
  */
 fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): String? {
     val cheapGood = StringBuilder()
-    var minimum = Double.POSITIVE_INFINITY
+    var minimum: Double? = null
     for ((key, value) in stuff) {
-        if (kind == value.first) if (value.second < minimum) {
-            minimum = value.second
-            cheapGood.clear()
-            cheapGood.append(key)
+        if (kind == value.first) {
+            if ((minimum == null) || (value.second < minimum)) {
+                minimum = value.second
+                cheapGood.clear()
+                cheapGood.append(key)
+            }
         }
     }
-    return if (minimum != Double.POSITIVE_INFINITY) cheapGood.toString()
+    return if (minimum != null) cheapGood.toString()
     else null
 }
+
 
 /**
  * Средняя (3 балла)
@@ -234,12 +228,7 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  * Например:
  *   canBuildFrom(listOf('a', 'b', 'o'), "baobab") -> true
  */
-fun canBuildFrom(chars: List<Char>, word: String): Boolean {
-    for (element in word) {
-        if ((element.uppercaseChar() !in chars) && (element.lowercaseChar() !in chars)) return false
-    }
-    return true
-}
+fun canBuildFrom(chars: List<Char>, word: String): Boolean = chars.toSet().containsAll(word.lowercase().toSet())
 
 /**
  * Средняя (4 балла)
@@ -323,13 +312,12 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
     val mapFriends = friends.mapValues { it.value.toMutableSet() }.toMutableMap()
     do {
         val newFriends = mapFriends.toMutableMap()
-        for ((key, value) in mapFriends) {
-            for (element in value) {
-                if (newFriends[element].isNullOrEmpty()) {
-                    if (element.isNotBlank()) newFriends[element] = mutableSetOf()
-                } else {
-                    val newF = newFriends[element]!!
-                    newFriends[key] = (newFriends[key]!! + newF - key).toMutableSet()
+        for ((person, mates) in mapFriends) {
+            for (friend in mates) {
+                if (newFriends[friend] == null) newFriends[friend] = mutableSetOf()
+                else {
+                    val newF = newFriends[friend]!!
+                    newFriends[person] = (newFriends[person]!! + newF - person).toMutableSet()
                 }
             }
         }
@@ -357,12 +345,9 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
  *   findSumOfTwo(listOf(1, 2, 3), 6) -> Pair(-1, -1)
  */
 fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
-    for (i in 0 until list.size) {
-        val j = number - list[i]
-        if (j in list) {
-            if (list.indexOf(j) != i) return if (list[i] > j) Pair(list.indexOf(j), i) else Pair(i, list.indexOf(j))
-        }
-    }
+    val goodPair = mutableMapOf<Int, Int>()
+    for (i in 0 until list.size) goodPair[i] = i
+    for ((key, value) in goodPair) if (number - key in goodPair.keys) return Pair(value, goodPair[number - key]!!)
     return Pair(-1, -1)
 }
 

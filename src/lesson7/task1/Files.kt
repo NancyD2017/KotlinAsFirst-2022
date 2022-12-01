@@ -3,7 +3,10 @@
 package lesson7.task1
 
 import java.io.File
+import java.io.FileWriter
 import java.lang.StringBuilder
+import lesson3.task1.digitNumber
+import kotlin.math.pow
 
 // Урок 7: работа с файлами
 // Урок интегральный, поэтому его задачи имеют сильно увеличенную стоимость
@@ -23,35 +26,36 @@ import java.lang.StringBuilder
  * их следует сохранить и в выходном файле
  */
 fun alignFile(inputName: String, lineLength: Int, outputName: String) {
-    val writer = File(outputName).bufferedWriter()
+    val writer = FileWriter(outputName)
     var currentLineLength = 0
-    fun append(word: String) {
-        if (currentLineLength > 0) {
-            if (word.length + currentLineLength >= lineLength) {
-                writer.newLine()
-                currentLineLength = 0
-            } else {
-                writer.write(" ")
-                currentLineLength++
-            }
-        }
-        writer.write(word)
-        currentLineLength += word.length
-    }
-    for (line in File(inputName).readLines()) {
-        if (line.isEmpty()) {
-            writer.newLine()
+    writer.use {
+        fun append(word: String) {
             if (currentLineLength > 0) {
-                writer.newLine()
-                currentLineLength = 0
+                if (word.length + currentLineLength >= lineLength) {
+                    writer.write(System.lineSeparator())
+                    currentLineLength = 0
+                } else {
+                    writer.write(" ")
+                    currentLineLength++
+                }
             }
-            continue
+            writer.write(word)
+            currentLineLength += word.length
         }
-        for (word in line.split(Regex("\\s+"))) {
-            append(word)
+        for (line in File(inputName).readLines()) {
+            if (line.isEmpty()) {
+                writer.write(System.lineSeparator())
+                if (currentLineLength > 0) {
+                    writer.write(System.lineSeparator())
+                    currentLineLength = 0
+                }
+                continue
+            }
+            for (word in line.split(Regex("\\s+"))) {
+                append(word)
+            }
         }
     }
-    writer.close()
 }
 
 /**
@@ -64,16 +68,17 @@ fun alignFile(inputName: String, lineLength: Int, outputName: String) {
  * Подчёркивание в середине и/или в конце строк значения не имеет.
  */
 fun deleteMarked(inputName: String, outputName: String) {
-    val writer = File(outputName).bufferedWriter()
-    for (line in File(inputName).readLines()) {
-        if (line.isNotEmpty()) {
-            if (line[0] != '_') {
-                writer.write(line)
-                writer.newLine()
-            }
-        } else writer.newLine()
+    val writer = FileWriter(outputName)
+    writer.use {
+        for (line in File(inputName).readLines()) {
+            if (line.isNotEmpty()) {
+                if (line[0] != '_') {
+                    writer.write(line)
+                    writer.write(System.lineSeparator())
+                }
+            } else writer.write(System.lineSeparator())
+        }
     }
-    writer.close()
 }
 
 /**
@@ -88,16 +93,11 @@ fun deleteMarked(inputName: String, outputName: String) {
 fun countSubstrings(inputName: String, substrings: List<String>): Map<String, Int> {
     val result = mutableMapOf<String, Int>()
     val tInInputName = File(inputName).readText().lowercase()
-    var matchLength = 0
     for (word in substrings) {
-        result[word] = 0
         val w = word.lowercase()
-        for (i in 0 until tInInputName.length) {
-            if (w[0] == tInInputName[i]) {
-                for (j in 1 until w.length) if (i + j < tInInputName.length) if (w[j] == tInInputName[i + j]) matchLength++
-                if (matchLength + 1 == w.length) result[word] = result[word]!! + 1
-            }
-            matchLength = 0
+        result[word] = 0
+        for (each in tInInputName.windowed(w.length)) {
+            if (each == w) result[word] = result[word]!! + 1
         }
     }
     return result
@@ -118,30 +118,23 @@ fun countSubstrings(inputName: String, substrings: List<String>): Map<String, In
  *
  */
 fun sibilants(inputName: String, outputName: String) {
-    val writer = File(outputName).bufferedWriter()
-    val stringFirst = "жчшщЖЧШЩ"
-    for (line in File(inputName).readLines()) {
-        for (i in 0 until line.length) {
-            if (i > 0) {
-                var case = 0
-                if (line[i].uppercaseChar() == line[i]) case = 1
-                when {
-                    ((line[i - 1] in stringFirst) && ((line[i] == 'ы') || (line[i] == 'Ы'))) ->
-                        if (case == 0) writer.write("и") else writer.write("И")
-
-                    ((line[i - 1] in stringFirst) && ((line[i] == 'ю') || (line[i] == 'Ю'))) ->
-                        if (case == 0) writer.write("у") else writer.write("У")
-
-                    ((line[i - 1] in stringFirst) && ((line[i] == 'я') || (line[i] == 'Я'))) ->
-                        if (case == 0) writer.write("а") else writer.write("А")
-
-                    else -> writer.write(line[i].toString())
-                }
-            } else writer.write(line[i].toString())
+    val writer = FileWriter(outputName)
+    val right = mapOf('ы' to 'и', 'Ы' to 'И', 'ю' to 'у', 'Ю' to 'У', 'я' to 'а', 'Я' to 'А')
+    val toughs = "жчшщЖЧШЩ"
+    writer.use {
+        for (line in File(inputName).readLines()) {
+            for (i in 0 until line.length) {
+                val mistake = line[i]
+                if (i > 0) {
+                    when {
+                        ((line[i - 1] in toughs) && (line[i] in "ыЫюЮяЯ")) -> writer.write(right[mistake].toString())
+                        else -> writer.write(line[i].toString())
+                    }
+                } else writer.write(mistake.toString())
+            }
+            writer.write(System.lineSeparator())
         }
-        writer.newLine()
     }
-    writer.close()
 }
 
 /**
@@ -162,18 +155,20 @@ fun sibilants(inputName: String, outputName: String) {
  *
  */
 fun centerFile(inputName: String, outputName: String) {
-    val writer = File(outputName).bufferedWriter()
+    val writer = FileWriter(outputName)
     var maxLen = 0
-    for (line in File(inputName).readLines()) if (line.trim().length > maxLen) maxLen = line.trim().length
-    for (line in File(inputName).readLines()) {
-        val t = line.trim()
-        if (t.length < maxLen) {
-            writer.write(" ".repeat((maxLen - t.length) / 2))
-            writer.write(t)
-        } else writer.write(t)
-        writer.newLine()
+    val lines = File(inputName).readLines()
+    for (line in lines) if (line.trim().length > maxLen) maxLen = line.trim().length
+    writer.use {
+        for (line in lines) {
+            val t = line.trim()
+            if (t.length < maxLen) {
+                writer.write(" ".repeat((maxLen - t.length) / 2))
+                writer.write(t)
+            } else writer.write(t)
+            writer.write(System.lineSeparator())
+        }
     }
-    writer.close()
 }
 
 /**
@@ -204,51 +199,52 @@ fun centerFile(inputName: String, outputName: String) {
  * 8) Если входной файл удовлетворяет требованиям 1-7, то он должен быть в точности идентичен выходному файлу
  */
 fun alignFileByWidth(inputName: String, outputName: String) {
-    val writer = File(outputName).bufferedWriter()
+    val writer = FileWriter(outputName)
     var maxLen = 0                //нужен для определения максимальной длины строки с "нормальным" количеством пробелов
-    val newLine = StringBuilder() //для каждой строки из текста строит строку с "нормальным" количеством пробелов
-    val text = StringBuilder()    //строит текст из newLine-ов
-    val list = mutableListOf<Int>()     //ищет "нормальное" количество пробелов для каждой из строк
+    var newLine = String() //для каждой строки из текста строит строку с "нормальным" количеством пробелов
+    val text = mutableListOf<String>()    //строит текст из newLine-ов
+    val spaceCountByLineList = mutableListOf<Int>() //ищет "нормальное" количество пробелов для строк
     var spacesCount = 0                 //ищет "нормальное" количество пробелов в одной строке
     for (line in File(inputName).readLines()) {
         for (i in 0 until line.length) {
             if (i + 1 < line.length) {
-                if (!((line[i] == line[i + 1]) && (line[i] == ' '))) newLine.append(line[i])
-            } else newLine.append(line[line.length - 1])
+                if (!((line[i] == line[i + 1]) && (line[i] == ' '))) newLine += line[i].toString()
+            } else newLine += line[line.length - 1].toString()
         }
-        if (newLine.trim().length > maxLen) maxLen = newLine.trim().length
-        text.append("${newLine.trim()}\n")
-        for (i in 0 until newLine.trim().length) if (newLine.trim()[i] == ' ') spacesCount++
-        newLine.clear()
-        list.add(spacesCount)
+        newLine = newLine.trim()
+        if (newLine.length > maxLen) maxLen = newLine.length
+        text.add("$newLine\n")
+        for (element in newLine) if (element == ' ') spacesCount++
+        newLine = String()
+        spaceCountByLineList.add(spacesCount)
         spacesCount = 0
     }
-    val set = text.toString().split("\n")                              //делит text на строки
-    for ((lineNumber, line) in set.withIndex()) {
-        if (line.length < maxLen) {
-            var spacesLeft = maxLen - line.length                               //считает недостаток пробелов в строке
-            spacesCount =
-                if (list.size > lineNumber) list[lineNumber] else 0   //считает недостающее количество пробелов для каждой из строк
-            val spacesNumber =
-                if (spacesCount > 0) spacesLeft / spacesCount else 0 //считает, на сколько пробелов нужно заменить каждый из пробелов
-            for (i in line.indices) {
-                if ((line[i] == ' ') && (spacesLeft > 0)) {
-                    if (spacesNumber * spacesCount < spacesLeft) {
-                        writer.write(" ".repeat(spacesNumber + 2))              //добавляет к spacesNumber один
-                        spacesLeft -= (spacesNumber + 1)                           //пробел который был и один,
-                        spacesCount -= 1                                           // образовавшийся из-за остатка
-                    } else {
-                        writer.write(" ".repeat(spacesNumber + 1))              //добавляет к spacesNumber один
-                        spacesLeft -= spacesNumber                                 //пробел который был
-                        spacesCount -= 1
-                    }
-                } else if ((line[i] == ' ') && (spacesLeft == 0)) writer.write(" ") //оставляет по 1 пробелу, когда это нужно
-                else writer.write(line[i].toString())                                   //или записывает непробельный символ line[i]
-            }
-        } else writer.write(line)                       //если у строки maxLen то она не изменяется
-        if (set.size - 1 != lineNumber) writer.newLine()//переходит на новую строку всегда, кроме самой последней строки
+    writer.use {
+        for (line in 0 until text.size) {
+            if (text[line].length < maxLen) {
+                var spacesLeft =
+                    maxLen - text[line].length + 1  //считает недостаток пробелов в строке, "1" появляется за счёт \n
+                spacesCount = spaceCountByLineList[line]   //считает недостающее количество пробелов для каждой из строк
+                val spacesNumber =
+                    if (spacesCount > 0) spacesLeft / spacesCount else 0 //считает, на сколько пробелов нужно заменить каждый из пробелов
+                for (i in text[line].indices) {
+                    if ((text[line][i] == ' ') && (spacesLeft > 0)) {
+                        if (spacesNumber * spacesCount < spacesLeft) {
+                            writer.write(" ".repeat(spacesNumber + 2))              //добавляет к spacesNumber один
+                            spacesLeft -= (spacesNumber + 1)                           //пробел который был и один,
+                            spacesCount -= 1                                           // образовавшийся из-за остатка
+                        } else {
+                            writer.write(" ".repeat(spacesNumber + 1))              //добавляет к spacesNumber один
+                            spacesLeft -= spacesNumber                                 //пробел который был
+                            spacesCount -= 1
+                        }
+                    } else if ((text[line][i] == ' ') && (spacesLeft == 0)) {
+                        writer.write(" ")                                       //оставляет по 1 пробелу, когда это нужно
+                    } else writer.write(text[line][i].toString())                  //или записывает непробельный символ line[i]
+                }
+            } else writer.write(text[line])                       //если у строки maxLen то она не изменяется
+        }
     }
-    writer.close()
 }
 
 /**
@@ -276,7 +272,7 @@ fun top20Words(inputName: String): Map<String, Int> = TODO()
 /**
  * Средняя (14 баллов)
  *
- * Реализовать транслитерацию текста из входного файла в выходной файл посредством динамически задаваемых правил.
+ * ��еализовать транслитерацию текста из входного файла в выходной файл посредством динамически задаваемых правил.
 
  * Во входном файле с именем inputName содержится некоторый текст (в том числе, и на русском языке).
  *
@@ -337,30 +333,28 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
  * Обратите внимание: данная функция не имеет возвращаемого значения
  */
 fun chooseLongestChaoticWord(inputName: String, outputName: String) {
-    val set = mutableSetOf<Char>()
-    val writer = File(outputName).bufferedWriter()
+    val setOfLongestChaoticWord = mutableSetOf<Char>()
+    val listOfLongestChaoticWord = mutableListOf<Char>()
+    val writer = FileWriter(outputName)
     val s = StringBuilder()
     var maxLen = 0
     var isLetterSame = false
     for (line in File(inputName).readLines()) {
-        for (i in line) {
-            if (i.lowercaseChar() !in set) set.add(i.lowercaseChar())
-            else {
-                isLetterSame = true
-                break
-            }
-        }
-        if ((set.size > maxLen) && (!(isLetterSame))) {
-            maxLen = set.size
+        val l = line.lowercase()
+        listOfLongestChaoticWord.clear()
+        listOfLongestChaoticWord.addAll(l.toList())
+        setOfLongestChaoticWord.addAll(l.toSet())
+        if (setOfLongestChaoticWord.size != listOfLongestChaoticWord.size) isLetterSame = true
+        if ((setOfLongestChaoticWord.size > maxLen) && (!(isLetterSame))) {
+            maxLen = setOfLongestChaoticWord.size
             s.clear().append(line)
-        } else if ((set.size == maxLen) && (!(isLetterSame))) {
+        } else if ((setOfLongestChaoticWord.size == maxLen) && (!(isLetterSame))) {
             s.append(", $line")
         }
-        set.clear()
+        setOfLongestChaoticWord.clear()
         isLetterSame = false
     }
-    writer.write(s.toString())
-    writer.close()
+    writer.use { writer.write(s.toString()) }
 }
 
 /**
@@ -551,7 +545,24 @@ fun markdownToHtml(inputName: String, outputName: String) {
  *
  */
 fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
-    TODO()
+    val writer = FileWriter(outputName)
+    val digitNumberLR = digitNumber(lhv) + digitNumber(rhv)
+    writer.use {
+        writer.write("${" ".repeat(digitNumber(rhv))}$lhv\n*${" ".repeat(digitNumber(lhv) - 1)}$rhv\n")
+        writer.write("${"-".repeat(digitNumberLR)}\n")
+        var i = 0
+        var r = rhv
+        while (i < digitNumber(rhv)) {
+            if (i == 0) {
+                writer.write(" ".repeat(digitNumberLR - digitNumber((r % 10) * lhv)))
+                writer.write("${(r % 10) * lhv}\n")
+            } else writer.write("+${" ".repeat(digitNumber(rhv) - 1 - i)}${(r % 10) * lhv}\n")
+            r /= 10
+            i++
+        }
+        writer.write("${"-".repeat(digitNumberLR)}\n")
+        writer.write("${" ".repeat(digitNumberLR - digitNumber(rhv * lhv))}${lhv * rhv}")
+    }
 }
 
 
@@ -575,7 +586,62 @@ fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
  * Используемые пробелы, отступы и дефисы должны в точности соответствовать примеру.
  *
  */
-fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
-    TODO()
+fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) { //2 и 20
+    val writer = FileWriter(outputName)
+    var l = lhv
+    var i = 0                               //благодаря ей из l вычитаются делимые (нужна для определения степени)
+    val devisionResult = StringBuilder()
+    val minusChiffre = mutableListOf<Int>() //помогает найти число, кратное каждой из цифр в devisionResult и < lhv
+    val newDevided = mutableListOf<Int>()   //помогает найти число для последующего его деления на rhv
+    var devisionGrower = "0"       //помогает проверить, что devisionResult найден правильно и нужно выйти из цикла
+    while ((devisionGrower.toInt() + 1) * rhv < lhv) {
+        var chiffresNumber = 0     //помогает найти число, которое больше rhv (из lhv) и => которое будет потом делиться
+        if (i == 0) {
+            while (((l / 10.0.pow(digitNumber(l) - 1 - chiffresNumber)) / rhv) < 1) chiffresNumber++
+            newDevided += l
+            devisionResult.append(((l / 10.0.pow(digitNumber(l) - 1 - chiffresNumber)) / rhv).toInt())
+            minusChiffre += (rhv * (((l / 10.0.pow(digitNumber(l) - 1 - chiffresNumber)) / rhv).toInt()))
+        } else {
+            if (i > 1) chiffresNumber = 1
+            if (rhv == 1) chiffresNumber = -1
+            if ((l / (10.0.pow(digitNumber(l) - 1 - chiffresNumber)).toInt()) != digitNumber(rhv)) chiffresNumber++
+            newDevided += (l / (10.0.pow(digitNumber(l) - 1 - chiffresNumber)).toInt())
+            devisionResult.append(((l / 10.0.pow(digitNumber(l) - 1 - chiffresNumber)) / rhv).toInt())
+            minusChiffre += (rhv * ((l / 10.0.pow(digitNumber(l) - 1 - chiffresNumber)) / rhv).toInt())
+        }
+        l -= (minusChiffre[i] * 10.0.pow((digitNumber(l) - digitNumber(minusChiffre[i])).toDouble())).toInt()
+        i++
+        devisionGrower = devisionResult.toString()
+    }
+    if (i == 0) {
+        devisionResult.append("0")
+        minusChiffre += 0
+        newDevided += lhv
+    }
+    val times = if (i != 0) i else 1      //проверяет, сколько раз writer должен написать делимое, делитель, черту деления
+    i = 0       //теперь i служит для обозначения нужных цифр для вывода (1-я, 2-я..тройка - делимое, делитель, черта деления)
+    writer.use {
+        writer.write(" $lhv | $rhv\n")
+        while (i < times) {
+            if (i == 0) {
+                writer.write("-${minusChiffre[i]}")
+                writer.write(" ".repeat((digitNumber(lhv) + 4) - (digitNumber(minusChiffre[i]) + 1)))
+                writer.write("$devisionResult\n${"-".repeat(digitNumber(minusChiffre[i]) + 1)}\n")
+            } else {
+                devisionGrower = if ((i != 0) && (minusChiffre[i] == newDevided[i])) "0"
+                else if ((i == 0) && (minusChiffre[i] == devisionResult.toString().toInt())) "0"
+                else ""
+                val allSpaces = if (devisionGrower != "0") digitNumber(devisionResult.toString().toInt()) +
+                        digitNumber(newDevided[i]) - 1 - digitNumber(minusChiffre[i]) else i
+                val spaceDevisionGrower =
+                    if (devisionGrower != "0") digitNumber(devisionResult.toString().toInt()) else i
+                writer.write("${" ".repeat(spaceDevisionGrower)}$devisionGrower")
+                writer.write("${newDevided[i]}\n${" ".repeat(allSpaces)}-${minusChiffre[i]}\n")
+                writer.write("${" ".repeat(allSpaces)}${"-".repeat(digitNumber(minusChiffre[i]) + 1)}\n")
+            }
+            i++
+        }
+        writer.write("${" ".repeat(digitNumber(lhv) - 1)} $l")
+    }
 }
 

@@ -3,8 +3,8 @@
 package lesson6.task1
 
 import lesson2.task2.daysInMonth
-import java.lang.StringBuilder
 import kotlin.math.pow
+import kotlin.text.StringBuilder
 
 // Урок 6: разбор строк, исключения
 // Максимальное количество баллов = 13
@@ -78,23 +78,26 @@ fun main() {
  * Обратите внимание: некорректная с точки зрения календаря дата (например, 30.02.2009) считается неверными
  * входными данными.
  */
+val monthList = listOf(
+    "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября",
+    "декабря"
+)
+
 fun dateStrToDigit(str: String): String {
     val parts = str.split(" ")
     if (parts.size != 3) return ""
     val number: Int
-    val part = parts[1]
-    val list = listOf(
-        "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября",
-        "декабря"
-    )
-    if (part in list) number = list.indexOf(part) + 1 else return ""
+    val month = parts[1]
+    val day = parts[0].toIntOrNull()
+    val year = parts[2].toIntOrNull()
+    if (month in monthList) number = monthList.indexOf(month) + 1 else return ""
     return when {
-        ((parts[0].toIntOrNull() == null) || (parts[0].toIntOrNull() == null)) -> ""
-        (parts[0].toInt() == 0) || (parts[2].toInt() == 0) -> ""
-        parts[0].toInt() > daysInMonth(number, parts[2].toInt()) -> ""
+        !converter(parts, day, year, month) -> ""
+        day!! > daysInMonth(number, year!!) -> ""
         else -> (String.format("%02d.%02d.%d", parts[0].toInt(), number, parts[2].toInt()))
     }
 }
+
 
 /**
  * Средняя (4 балла)
@@ -106,23 +109,24 @@ fun dateStrToDigit(str: String): String {
  * Обратите внимание: некорректная с точки зрения календаря дата (например, 30 февраля 2009) считается неверными
  * входными данными.
  */
+
 fun dateDigitToStr(digital: String): String {
     val parts = digital.split(".")
     if (parts.size != 3) return ""
     val number = StringBuilder()
-    val part = parts[1]
-    val listForMonth = listOf(
-        "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября",
-        "декабря"
-    )
-    val listForDays = listOf("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
-    if (part in listForDays) number.append(listForMonth[listForDays.indexOf(part)]) else return ""
+    val part = parts[1].toIntOrNull()
+    val day = parts[0].toIntOrNull()
+    val year = parts[2].toIntOrNull()
+    if (part in 1..12) number.append(monthList[part!! - 1]) else return ""
     return when {
-        (parts[0].toInt() == 0) || (parts[2].toInt() == 0) -> ""
-        parts[0].toInt() > daysInMonth(part.toInt(), parts[2].toInt()) -> ""
-        else -> String.format("%d $number %d", parts[0].toInt(), parts[2].toInt())
+        !converter(parts, day, year, part.toString()) -> ""
+        day!! > daysInMonth(part, year!!) -> ""
+        else -> String.format("%d $number %d", day, year)
     }
 }
+
+fun converter(parts: List<String>, day: Int?, year: Int?, part: String): Boolean =
+    !((day == null) || (year == null) || ((day <= 0) || (year <= 0)))
 
 /**
  * Средняя (4 балла)
@@ -175,6 +179,7 @@ fun flattenPhoneNumber(phone: String): String {
  * При нарушении формата входной строки или при отсутствии в ней чисел, вернуть -1.
  */
 fun bestLongJump(jumps: String): Int {
+    if (!Regex("""(\d+( (%|\+|-)){0,2} ?)+""").matches(jumps)) return -1
     val jumpings = jumps.split(" ")
     val mySymbols = " %-"
     var maximum = 0
@@ -199,16 +204,11 @@ fun bestLongJump(jumps: String): Int {
  */
 fun bestHighJump(jumps: String): Int {
     for (j in jumps) if (!((j in '0'..'9') || (j in " +-%"))) return -1
-    val goodJumps = jumps.split(Regex("""\d+ \%+-*+""")).filter { it.length >= 3 }
+    if (!Regex("""(\d+ (%*(-|\+|()))\s?)+""").matches(jumps)) return -1
+    val goodJumps = jumps.split(Regex(""" """))
     var maximum = -1                    //3, потому что в условии хороший прыжок состоит из числа, пробела и символа +
-    val height = StringBuilder()
-    for (jump in goodJumps) {
-        for (i in jump) {
-            if (i in '0'..'9') {
-                height.append(i)
-                if (height.toString().toInt() > maximum) maximum = height.toString().toInt()
-            } else height.clear()
-        }
+    for (i in goodJumps.indices step 2) {
+        if (goodJumps[i + 1] == "+") if (goodJumps[i].toInt() > maximum) maximum = goodJumps[i].toInt()
     }
     return maximum
 }
@@ -274,13 +274,13 @@ fun firstDuplicateIndex(str: String): Int {
  */
 fun mostExpensive(description: String): String {
     if (!Regex("""(\S+\s[0-9]+(.[0-9]*)?; )*(\S+\s[0-9]+(.[0-9]*)?)""").matches(description)) return ""
-    val prodAndPri = description.split(Regex("(; )|( )"))
-    var result = String()
+    val productAndPrice = description.split(Regex("(; )|( )"))
+    var result = ""
     var maximum = Double.NEGATIVE_INFINITY
-    for (i in 0 until prodAndPri.size step 2) {
-        if (prodAndPri[i + 1].toDouble() > maximum) {
-            maximum = prodAndPri[i + 1].toDouble()
-            result = prodAndPri[i]
+    for (i in 0 until productAndPrice.size step 2) {
+        if (productAndPrice[i + 1].toDouble() > maximum) {
+            maximum = productAndPrice[i + 1].toDouble()
+            result = productAndPrice[i]
         }
     }
     return if (maximum != Double.NEGATIVE_INFINITY) result
@@ -299,8 +299,7 @@ fun mostExpensive(description: String): String {
  * Вернуть -1, если roman не является корректным римским числом
  */
 fun fromRoman(roman: String): Int {
-    if (!Regex("""(M{0,3}C?M?D?C?D?C{0,3}X?C?L?X?L?X{0,3}I?X?V?I?V?I{0,3})""").matches(roman)) return -1
-    if (Regex("""(M{4,}|D{4,}|C{4,}|L{4,}|X{4,}|V{4,}|I{4,})""").matches(roman)) return -1
+    if (!Regex("""^M{0,3}(CM|CD|D?C{0,3})?(XC|XL|L?X{0,3})?(IX|IV|V?I{0,3})?$""").matches(roman)) return -1
     if (roman.isBlank()) return -1
     val roman1 = setOf("I", "X", "C", "M")
     val roman5 = setOf("V", "L", "D")
@@ -309,41 +308,28 @@ fun fromRoman(roman: String): Int {
     var result = 0
     var isSecondDigitUsed = false
     for (i in 0 until roman.length) {
+        val power1 = roman1.indexOf(roman[i].toString()).toDouble()
+        val power5 = roman5.indexOf(roman[i].toString()).toDouble()
         if (i + 1 != roman.length) {
-            val possibleNumber = roman[i].toString() + roman[i + 1]
-            when {
-                (((possibleNumber) in roman4) && (!isSecondDigitUsed)) -> {
+            val possibleNumber = (roman[i].toString() + roman[i + 1])
+            if (!isSecondDigitUsed) when {
+                ((possibleNumber) in roman4) -> {
                     result += 4 * (10.0.pow(roman4.indexOf(possibleNumber).toDouble())).toInt()
                     isSecondDigitUsed = true
                 }
 
-                (((possibleNumber) in roman9) && (!isSecondDigitUsed)) -> {
+                ((possibleNumber) in roman9) -> {
                     result += 9 * (10.0.pow(roman9.indexOf(possibleNumber).toDouble())).toInt()
                     isSecondDigitUsed = true
                 }
 
-                (((roman[i].toString()) in roman1) && (!isSecondDigitUsed)) -> {
-                    result += 10.0.pow(roman1.indexOf(roman[i].toString()).toDouble()).toInt()
-                    isSecondDigitUsed = false
-                }
+                ((roman[i].toString()) in roman1) -> result += 10.0.pow(power1).toInt()
+                ((roman[i].toString()) in roman5) -> result += 5 * (10.0.pow(power5)).toInt()
+            } else isSecondDigitUsed = false
+        } else if (!isSecondDigitUsed) when {
+            (roman[i].toString() in roman1) -> result += 10.0.pow(power1).toInt()
 
-                (((roman[i].toString()) in roman5) && (!isSecondDigitUsed)) -> {
-                    result += 5 * (10.0.pow(roman5.indexOf(roman[i].toString()).toDouble())).toInt()
-                    isSecondDigitUsed = false
-                }
-
-                (isSecondDigitUsed) -> isSecondDigitUsed = false
-            }
-        } else when {
-            ((roman[i].toString() in roman1) && (!isSecondDigitUsed)) -> {
-                result += 10.0.pow(roman1.indexOf(roman[i].toString()).toDouble()).toInt()
-                isSecondDigitUsed = false
-            }
-
-            (((roman[i].toString()) in roman5) && (!isSecondDigitUsed)) -> {
-                result += 5 * (10.0.pow(roman5.indexOf(roman[i].toString()).toDouble())).toInt()
-                isSecondDigitUsed = false
-            }
+            ((roman[i].toString()) in roman5) -> result += 5 * (10.0.pow(power5)).toInt()
         }
     }
     return result
