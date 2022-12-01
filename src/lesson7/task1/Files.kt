@@ -556,7 +556,7 @@ fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
             if (i == 0) {
                 writer.write(" ".repeat(digitNumberLR - digitNumber((r % 10) * lhv)))
                 writer.write("${(r % 10) * lhv}\n")
-            } else writer.write("+${" ".repeat(digitNumber(rhv) - 1 - i)}${(r % 10) * lhv}\n")
+            } else writer.write("+${" ".repeat(digitNumberLR - i - digitNumber((r % 10) * lhv) - 1)}${(r % 10) * lhv}\n")
             r /= 10
             i++
         }
@@ -613,10 +613,13 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) { //2 и 20
         i++
         devisionGrower = devisionResult.toString()
     }
-    if (i == 0) {
+    if ((i == 0) && (lhv != 1)) {
         devisionResult.append("0")
         minusChiffre += 0
         newDevided += lhv
+    } else if (lhv == 1) {
+        devisionResult.append("1")
+        minusChiffre += 1
     }
     val times = if (i != 0) i else 1      //проверяет, сколько раз writer должен написать делимое, делитель, черту деления
     i = 0       //теперь i служит для обозначения нужных цифр для вывода (1-я, 2-я..тройка - делимое, делитель, черта деления)
@@ -641,7 +644,8 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) { //2 и 20
             }
             i++
         }
-        writer.write("${" ".repeat(digitNumber(lhv) - 1)} $l")
+        if (lhv != 1) writer.write("${" ".repeat(digitNumber(lhv) - 1)} $l")
+        else writer.write("${" ".repeat(digitNumber(lhv) - 1)} 0")
     }
 }
 

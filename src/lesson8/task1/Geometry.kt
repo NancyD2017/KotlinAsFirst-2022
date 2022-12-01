@@ -80,23 +80,14 @@ data class Circle(val center: Point, val radius: Double) {
      * расстояние между их центрами минус сумма их радиусов.
      * Расстояние между пересекающимися окружностями считать равным 0.0.
      */
-    fun distance(other: Circle): Double {
-        val cD = sqrt(sqr(center.x - other.center.x) + sqr(center.y - other.center.y))
-        val bR = maxOf(radius, other.radius)
-        val sR = minOf(radius, other.radius)
-        return if ((cD + sR < bR) || ((cD <= bR) && (cD + sR > bR)) || ((cD > bR) && (sR + bR == cD)) ||
-            ((center.x == other.center.x) && (center.y == other.center.y)) || (cD + sR == bR)
-        ) 0.0
-        else cD - (radius + other.radius)
-    }
+    fun distance(other: Circle): Double = TODO()
 
     /**
      * Тривиальная (1 балл)
      *
      * Вернуть true, если и только если окружность содержит данную точку НА себе или ВНУТРИ себя
      */
-    fun contains(p: Point): Boolean = ((sqrt(sqr(center.x - p.x) + sqr(center.y - p.y)) <= radius) ||
-            (sqr(center.x) + sqr(center.y) <= radius) || ((center.x == p.x) && (center.y == p.y)))
+    fun contains(p: Point): Boolean = TODO()
 }
 
 /**
@@ -116,19 +107,7 @@ data class Segment(val begin: Point, val end: Point) {
  * Дано множество точек. Вернуть отрезок, соединяющий две наиболее удалённые из них.
  * Если в множестве менее двух точек, бросить IllegalArgumentException
  */
-fun diameter(vararg points: Point): Segment {
-    if (points.size < 2) throw IllegalArgumentException()
-    var segmentLen = 0.0
-    var segment = Segment(points[0], points[1])
-    for (i in 0 until points.size - 1) for (j in 1 until points.size) {
-        val len = sqrt(sqr(points[i].x - points[j].x) + sqr(points[i].y - points[j].y))
-        if (len > segmentLen) {
-            segmentLen = len
-            segment = Segment(points[i], points[j])
-        }
-    }
-    return segment
-}
+fun diameter(vararg points: Point): Segment = TODO()
 
 /**
  * Простая (2 балла)
