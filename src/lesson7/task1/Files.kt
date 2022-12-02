@@ -272,7 +272,7 @@ fun top20Words(inputName: String): Map<String, Int> = TODO()
 /**
  * Средняя (14 баллов)
  *
- * ��еализовать транслитерацию текста из входного файла в выходной файл посредством динамически задаваемых правил.
+ * ��еализовать транслитерацию текста из входного файла в выходной файл посредством ди��амически задаваемых правил.
 
  * Во входном файле с именем inputName содержится некоторый текст (в том числе, и на русском языке).
  *
@@ -609,7 +609,7 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) { //2 и 20
         } else {
             if (i > 1) chiffresNumber = 1
             if (rhv == 1) chiffresNumber = -1
-            if ((l / (10.0.pow(digitNumber(l) - 1 - chiffresNumber)).toInt()) != digitNumber(rhv)) chiffresNumber++
+            if ((l / (10.0.pow(digitNumber(l) - chiffresNumber)).toInt()) != digitNumber(rhv)) chiffresNumber++
             newDevided += (l / (10.0.pow(digitNumber(l) - 1 - chiffresNumber)).toInt())
             devisionResult.append(((l / 10.0.pow(digitNumber(l) - 1 - chiffresNumber)) / rhv).toInt())
             minusChiffre += (rhv * ((l / 10.0.pow(digitNumber(l) - 1 - chiffresNumber)) / rhv).toInt())
@@ -634,9 +634,12 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) { //2 и 20
     val times = if (i != 0) i else 1      //проверяет, сколько раз writer должен написать делимое, делитель, черту деления
     i = 0       //теперь i служит для обозначения нужных цифр для вывода (1-я, 2-я..тройка - делимое, делитель, черта деления)
     writer.use {
-        val spaces = if (((lhv / 10.0.pow(digitNumber(lhv) - 1)).toInt() == (minusChiffre[0] /
-                    10.0.pow(digitNumber(minusChiffre[0]) - 1)).toInt()) ||
-            (minusChiffre[0] == 0 && digitNumber(lhv) < 2)) 1 else 0
+        val spaces = if (((lhv / 10.0.pow(digitNumber(lhv) - 1)).toInt() == (minusChiffre[0] / 10.0.pow(
+                digitNumber(minusChiffre[0]) - 1
+            )).toInt()) || (minusChiffre[0] == 0 && digitNumber(lhv) < 2) ||
+            (minusChiffre[0] < 9 && minusChiffre[0] < (lhv / 10.0.pow(digitNumber(lhv) - 1)).toInt()) &&
+            minusChiffre[0] != 0)
+            1 else 0
         writer.write("${" ".repeat(spaces)}$lhv | $rhv\n")
         val firstLen = ("${" ".repeat(spaces)}$lhv | ").length
         while (i < times) {
@@ -646,13 +649,15 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) { //2 и 20
                 writer.write("$devisionResult\n${"-".repeat(digitNumber(minusChiffre[i]) + 1)}\n")
                 odds = lhv - minusChiffre[i]
             } else {
-                devisionGrower = if ((i != 0) && (minusChiffre[i] == newDevided[i])) "0"
+                devisionGrower = if ((i != 0) && ((minusChiffre[0] / 10.0.pow(
+                        digitNumber(minusChiffre[0]) - 1)).toInt() == (lhv / 10.0.pow(
+                        digitNumber(lhv) - 1)).toInt()) && digitNumber(minusChiffre[0]) == 1) "0"
                 else if ((i == 0) && (minusChiffre[i] == devisionResult.toString().toInt())) "0"
                 else ""
-                val allSpaces = if (devisionGrower != "0") digitNumber(devisionResult.toString().toInt()) +
-                        digitNumber(newDevided[i]) - 1 - digitNumber(minusChiffre[i]) else i
                 val spaceDevisionGrower =
-                    if (devisionGrower != "0") digitNumber(devisionResult.toString().toInt()) else i
+                    if (devisionGrower != "0") digitNumber(minusChiffre[i - 1]) + 2 * (i - 1) else i
+                val allSpaces = if (devisionGrower != "0") spaceDevisionGrower + digitNumber(newDevided[i]) - 1 -
+                        digitNumber(minusChiffre[i]) else i
                 writer.write("${" ".repeat(spaceDevisionGrower)}$devisionGrower")
                 writer.write("${newDevided[i]}\n${" ".repeat(allSpaces)}-${minusChiffre[i]}\n")
                 writer.write("${" ".repeat(allSpaces)}${"-".repeat(digitNumber(minusChiffre[i]) + 1)}\n")
