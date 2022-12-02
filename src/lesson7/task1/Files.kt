@@ -635,7 +635,8 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) { //2 и 20
     i = 0       //теперь i служит для обозначения нужных цифр для вывода (1-я, 2-я..тройка - делимое, делитель, черта деления)
     writer.use {
         val spaces = if (((lhv / 10.0.pow(digitNumber(lhv) - 1)).toInt() == (minusChiffre[0] /
-                    10.0.pow(digitNumber(minusChiffre[0]) - 1)).toInt()) || (minusChiffre[0] == 0)) 1 else 0
+                    10.0.pow(digitNumber(minusChiffre[0]) - 1)).toInt()) ||
+            (minusChiffre[0] == 0 && digitNumber(lhv) < 2)) 1 else 0
         writer.write("${" ".repeat(spaces)}$lhv | $rhv\n")
         val firstLen = ("${" ".repeat(spaces)}$lhv | ").length
         while (i < times) {
