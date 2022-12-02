@@ -546,22 +546,26 @@ fun markdownToHtml(inputName: String, outputName: String) {
  */
 fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
     val writer = FileWriter(outputName)
-    val digitNumberLR = digitNumber(lhv) + digitNumber(rhv)
+    val digitNumberLR = digitNumber(rhv * lhv)
     writer.use {
-        writer.write("${" ".repeat(digitNumber(rhv))}$lhv\n*${" ".repeat(digitNumber(lhv) - 1)}$rhv\n")
-        writer.write("${"-".repeat(digitNumberLR)}\n")
+        writer.write("${" ".repeat(digitNumberLR - digitNumber(lhv) + 1)}$lhv\n*")
+        writer.write("${" ".repeat(digitNumberLR - digitNumber(rhv))}$rhv\n")
+        writer.write("${"-".repeat(digitNumberLR + 1)}\n")
         var i = 0
         var r = rhv
         while (i < digitNumber(rhv)) {
             if (i == 0) {
-                writer.write(" ".repeat(digitNumberLR - digitNumber((r % 10) * lhv)))
+                writer.write(" ".repeat((digitNumberLR + 1) - digitNumber((r % 10) * lhv)))
                 writer.write("${(r % 10) * lhv}\n")
-            } else writer.write("+${" ".repeat(digitNumberLR - i - digitNumber((r % 10) * lhv) - 1)}${(r % 10) * lhv}\n")
+            } else {
+                writer.write("+${" ".repeat(digitNumberLR - digitNumber((r % 10) * lhv) - i)}")
+                writer.write("${(r % 10) * lhv}\n")
+            }
             r /= 10
             i++
         }
-        writer.write("${"-".repeat(digitNumberLR)}\n")
-        writer.write("${" ".repeat(digitNumberLR - digitNumber(rhv * lhv))}${lhv * rhv}")
+        writer.write("${"-".repeat(digitNumberLR + 1)}\n")
+        writer.write(" ${lhv * rhv}")
     }
 }
 
@@ -594,6 +598,7 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) { //2 и 20
     val minusChiffre = mutableListOf<Int>() //помогает найти число, кратное каждой из цифр в devisionResult и < lhv
     val newDevided = mutableListOf<Int>()   //помогает найти число для последующего его деления на rhv
     var devisionGrower = "0"       //помогает проверить, что devisionResult найден правильно и нужно выйти из цикла
+    var odds = 0
     while ((devisionGrower.toInt() + 1) * rhv < lhv) {
         var chiffresNumber = 0     //помогает найти число, которое больше rhv (из lhv) и => которое будет потом делиться
         if (i == 0) {
@@ -617,9 +622,14 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) { //2 и 20
         devisionResult.append("0")
         minusChiffre += 0
         newDevided += lhv
-    } else if (lhv == 1) {
+    } else if (lhv == 1 && rhv == 1) {
         devisionResult.append("1")
         minusChiffre += 1
+        odds = 0
+    } else if (lhv < rhv) {
+        devisionResult.append("0")
+        minusChiffre += 0
+        odds = lhv
     }
     val times = if (i != 0) i else 1      //проверяет, сколько раз writer должен написать делимое, делитель, черту деления
     i = 0       //теперь i служит для обозначения нужных цифр для вывода (1-я, 2-я..тройка - делимое, делитель, черта деления)
@@ -645,7 +655,7 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) { //2 и 20
             i++
         }
         if (lhv != 1) writer.write("${" ".repeat(digitNumber(lhv) - 1)} $l")
-        else writer.write("${" ".repeat(digitNumber(lhv) - 1)} 0")
+        else writer.write("${" ".repeat(digitNumber(lhv) - 1)} $odds")
     }
 }
 

@@ -2,6 +2,7 @@
 
 package lesson5.task1
 
+import ru.spbstu.wheels.sorted
 import java.lang.StringBuilder
 
 // Урок 5: ассоциативные массивы и множества
@@ -351,9 +352,13 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
  */
 fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
     val goodPair = mutableMapOf<Int, Int>()
-    for (i in list.indices) goodPair[list[i]] = i
-    for ((key, value) in goodPair) if ((number - value in goodPair.keys) && (goodPair[number - value] != key))
-        return Pair(goodPair[number - key]!!, value)
+    for (i in 0 until list.size) goodPair[list[i]] = i
+    println(goodPair)
+    for ((chiffre, position) in list.withIndex()) {
+        if ((number - position in goodPair) && (goodPair[number - position] != chiffre)) {
+            return Pair(goodPair[number - position]!!, chiffre).sorted()
+        }
+    }
     return Pair(-1, -1)
 }
 
