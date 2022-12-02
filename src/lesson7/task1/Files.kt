@@ -618,14 +618,14 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) { //2 и 20
         i++
         devisionGrower = devisionResult.toString()
     }
-    if ((i == 0) && (lhv != 1)) {
+    if (lhv == rhv) {
+        devisionResult.append("1")
+        minusChiffre += lhv
+        odds = 0
+    } else if ((i == 0) && (lhv != 1)) {
         devisionResult.append("0")
         minusChiffre += 0
         newDevided += lhv
-    } else if (lhv == 1 && rhv == 1) {
-        devisionResult.append("1")
-        minusChiffre += 1
-        odds = 0
     } else if (lhv < rhv) {
         devisionResult.append("0")
         minusChiffre += 0
@@ -640,6 +640,7 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) { //2 и 20
                 writer.write("-${minusChiffre[i]}")
                 writer.write(" ".repeat((digitNumber(lhv) + 4) - (digitNumber(minusChiffre[i]) + 1)))
                 writer.write("$devisionResult\n${"-".repeat(digitNumber(minusChiffre[i]) + 1)}\n")
+                odds = lhv - minusChiffre[i]
             } else {
                 devisionGrower = if ((i != 0) && (minusChiffre[i] == newDevided[i])) "0"
                 else if ((i == 0) && (minusChiffre[i] == devisionResult.toString().toInt())) "0"
@@ -651,10 +652,11 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) { //2 и 20
                 writer.write("${" ".repeat(spaceDevisionGrower)}$devisionGrower")
                 writer.write("${newDevided[i]}\n${" ".repeat(allSpaces)}-${minusChiffre[i]}\n")
                 writer.write("${" ".repeat(allSpaces)}${"-".repeat(digitNumber(minusChiffre[i]) + 1)}\n")
+                odds = newDevided[i] - minusChiffre[i]
             }
             i++
         }
-        if (lhv != 1) writer.write("${" ".repeat(digitNumber(lhv) - 1)} $l")
+        if (lhv != 1) writer.write("${" ".repeat(digitNumber(lhv) - 1)} $odds")
         else writer.write("${" ".repeat(digitNumber(lhv) - 1)} $odds")
     }
 }
