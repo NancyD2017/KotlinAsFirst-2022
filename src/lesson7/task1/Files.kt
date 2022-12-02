@@ -634,11 +634,13 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) { //2 и 20
     val times = if (i != 0) i else 1      //проверяет, сколько раз writer должен написать делимое, делитель, черту деления
     i = 0       //теперь i служит для обозначения нужных цифр для вывода (1-я, 2-я..тройка - делимое, делитель, черта деления)
     writer.use {
-        writer.write(" $lhv | $rhv\n")
+        val spaces = if (digitNumber(lhv) == digitNumber(minusChiffre[0]) + 1) 0 else 1
+        writer.write("${" ".repeat(spaces)}$lhv | $rhv\n")
+        val firstLen = ("${" ".repeat(spaces)}$lhv | ").length
         while (i < times) {
             if (i == 0) {
                 writer.write("-${minusChiffre[i]}")
-                writer.write(" ".repeat((digitNumber(lhv) + 4) - (digitNumber(minusChiffre[i]) + 1)))
+                writer.write(" ".repeat(firstLen - 1 - digitNumber(minusChiffre[i])))
                 writer.write("$devisionResult\n${"-".repeat(digitNumber(minusChiffre[i]) + 1)}\n")
                 odds = lhv - minusChiffre[i]
             } else {
@@ -656,7 +658,7 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) { //2 и 20
             }
             i++
         }
-        if (lhv != 1) writer.write("${" ".repeat(digitNumber(lhv) - 1)} $odds")
+        if (lhv != 1) writer.write("${" ".repeat(firstLen - 3 - digitNumber(odds))}$odds")
         else writer.write("${" ".repeat(digitNumber(lhv) - 1)} $odds")
     }
 }
