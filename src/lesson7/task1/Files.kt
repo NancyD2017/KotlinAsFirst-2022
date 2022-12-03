@@ -6,6 +6,7 @@ import java.io.File
 import java.io.FileWriter
 import java.lang.StringBuilder
 import lesson3.task1.digitNumber
+import kotlin.math.min
 import kotlin.math.pow
 
 // Урок 7: работа с файлами
@@ -610,8 +611,11 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
             minusChiffre += (rhv * (((l / 10.0.pow(digitNumber(l) - 1 - chiffresNumber)) / rhv).toInt()))
         } else {
             if (i > 1) chiffresNumber = 1
-            if (newDevided[i - 1] / 10.0.pow(digitNumber(newDevided[i - 1]) -
-                            digitNumber(minusChiffre[i - 1])).toInt() == minusChiffre[i - 1]) chiffresNumber = -1
+            if (newDevided[i - 1] / 10.0.pow(
+                    digitNumber(newDevided[i - 1]) -
+                            digitNumber(minusChiffre[i - 1])
+                ).toInt() == minusChiffre[i - 1]
+            ) chiffresNumber = -1
             if (rhv == 1) chiffresNumber = -1
             for (char in 0 until lhv.toString().length) if (lhv.toString()[char] == '0') zeroPosition = char
             if ((digitNumber(k) > digitNumber(l) + 1) && i == zeroPosition) chiffresNumber = -2
@@ -638,14 +642,17 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
         minusChiffre += 0
         odds = lhv
     }
-    val times = if (i != 0) i else 1      //проверяет, сколько раз writer должен написать делимое, делитель, черту деления
-    i = 0       //теперь i служит для обозначения нужных цифр для вывода (1-я, 2-я..тройка - делимое, делитель, черта деления)
+    val times =
+        if (i != 0) i else 1      //проверяет, сколько раз writer должен написать делимое, делитель, черту деления
+    i =
+        0       //теперь i служит для обозначения нужных цифр для вывода (1-я, 2-я..тройка - делимое, делитель, черта деления)
     writer.use {
         val spaces = if (((lhv / 10.0.pow(digitNumber(lhv) - 1)).toInt() == (minusChiffre[0] / 10.0.pow(
                 digitNumber(minusChiffre[0]) - 1
             )).toInt()) || (minusChiffre[0] == 0 && digitNumber(lhv) < 2) ||
             (minusChiffre[0] < 9 && minusChiffre[0] < (lhv / 10.0.pow(digitNumber(lhv) - 1)).toInt()) &&
-            minusChiffre[0] != 0)
+            minusChiffre[0] != 0
+        )
             1 else 0
         writer.write("${" ".repeat(spaces)}$lhv | $rhv\n")
         val firstLen = ("${" ".repeat(spaces)}$lhv | ").length
@@ -657,11 +664,14 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
                 odds = lhv - minusChiffre[i]
             } else {
                 devisionGrower = if ((i != 0) && ((minusChiffre[0] == (lhv / 10.0.pow(
-                        digitNumber(lhv) - digitNumber(minusChiffre[0]))).toInt()))) "0"
+                        digitNumber(lhv) - digitNumber(minusChiffre[0])
+                    )).toInt()))
+                ) "0"
                 else if ((i == 0) && (minusChiffre[i] == devisionResult.toString().toInt())) "0"
                 else ""
                 val spaceDevisionGrower =
-                    if (devisionGrower != "0") digitNumber(minusChiffre[i - 1]) + 2 * (i - 1) else digitNumber(minusChiffre[i - 1]) + i - 1
+                    if (devisionGrower != "0") digitNumber(minusChiffre[i - 1]) + 2 * (i - 1) else
+                        digitNumber(minusChiffre[i - 1]) + i - 1
                 val allSpaces = if (devisionGrower != "0") spaceDevisionGrower + digitNumber(newDevided[i]) - 1 -
                         digitNumber(minusChiffre[i]) else digitNumber(minusChiffre[i - 1]) + i - 1
                 writer.write("${" ".repeat(spaceDevisionGrower)}$devisionGrower")
