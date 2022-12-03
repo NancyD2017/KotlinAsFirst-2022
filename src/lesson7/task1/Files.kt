@@ -221,7 +221,7 @@ fun alignFileByWidth(inputName: String, outputName: String) {
     }
     writer.use {
         for (line in 0 until text.size) {
-            if (text[line].length < maxLen) {
+            if (text[line].trim().length < maxLen) {
                 var spacesLeft =
                     maxLen - text[line].length + 1  //считает недостаток пробелов в строке, "1" появляется за счёт \n
                 spacesCount = spaceCountByLineList[line]   //считает недостающее количество пробелов для каждой из строк
@@ -599,6 +599,7 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) { //2 и 20
     val newDevided = mutableListOf<Int>()   //помогает найти число для последующего его деления на rhv
     var devisionGrower = "0"       //помогает проверить, что devisionResult найден правильно и нужно выйти из цикла
     var odds = 0
+    var k = 0
     while ((devisionGrower.toInt() + 1) * rhv < lhv) {
         var chiffresNumber = 0     //помогает найти число, которое больше rhv (из lhv) и => которое будет потом делиться
         if (i == 0) {
@@ -608,12 +609,17 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) { //2 и 20
             minusChiffre += (rhv * (((l / 10.0.pow(digitNumber(l) - 1 - chiffresNumber)) / rhv).toInt()))
         } else {
             if (i > 1) chiffresNumber = 1
+            if (newDevided[i - 1] / 10.0.pow(digitNumber(newDevided[i - 1]) -
+                            digitNumber(minusChiffre[i - 1])).toInt() == minusChiffre[i - 1]) chiffresNumber = -1
             if (rhv == 1) chiffresNumber = -1
+            if (digitNumber(k) > digitNumber(l) + 1 && minusChiffre[i - 1] == newDevided[i - 1] / 10.0.pow
+                    (digitNumber(newDevided[i - 1]) - digitNumber(minusChiffre[i - 1])).toInt()) chiffresNumber = -2
             if ((l / (10.0.pow(digitNumber(l) - chiffresNumber)).toInt()) != digitNumber(rhv)) chiffresNumber++
             newDevided += (l / (10.0.pow(digitNumber(l) - 1 - chiffresNumber)).toInt())
             devisionResult.append(((l / 10.0.pow(digitNumber(l) - 1 - chiffresNumber)) / rhv).toInt())
             minusChiffre += (rhv * ((l / 10.0.pow(digitNumber(l) - 1 - chiffresNumber)) / rhv).toInt())
         }
+        k = l
         l -= (minusChiffre[i] * 10.0.pow((digitNumber(l) - digitNumber(minusChiffre[i])).toDouble())).toInt()
         i++
         devisionGrower = devisionResult.toString()
