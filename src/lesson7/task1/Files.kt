@@ -2,11 +2,11 @@
 
 package lesson7.task1
 
+import lesson2.task2.isNumberHappy
 import java.io.File
 import java.io.FileWriter
 import java.lang.StringBuilder
 import lesson3.task1.digitNumber
-import kotlin.math.min
 import kotlin.math.pow
 
 // Урок 7: работа с файлами
@@ -593,22 +593,22 @@ fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
  */
 fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
     val writer = FileWriter(outputName)
-    var l = lhv
+    val l = mutableListOf<Int>()
+    l.add(lhv)
     var i = 0                               //благодаря ей из l вычитаются делимые (нужна для определения степени)
     val devisionResult = StringBuilder()
     val minusChiffre = mutableListOf<Int>() //помогает найти число, кратное каждой из цифр в devisionResult и < lhv
     val newDevided = mutableListOf<Int>()   //помогает найти число для последующего его деления на rhv
     var devisionGrower = "0"       //помогает проверить, что devisionResult найден правильно и нужно выйти из цикла
     var odds = 0
-    var k = 0
     var zeroPosition = -1
     while ((devisionGrower.toInt() + 1) * rhv < lhv) {
         var chiffresNumber = 0     //помогает найти число, которое больше rhv (из lhv) и => которое будет потом делиться
         if (i == 0) {
-            while (((l / 10.0.pow(digitNumber(l) - 1 - chiffresNumber)) / rhv) < 1) chiffresNumber++
-            newDevided += l
-            devisionResult.append(((l / 10.0.pow(digitNumber(l) - 1 - chiffresNumber)) / rhv).toInt())
-            minusChiffre += (rhv * (((l / 10.0.pow(digitNumber(l) - 1 - chiffresNumber)) / rhv).toInt()))
+            while (((l[i] / 10.0.pow(digitNumber(l[i]) - 1 - chiffresNumber)) / rhv) < 1) chiffresNumber++
+            newDevided += l[i]
+            devisionResult.append(((l[i] / 10.0.pow(digitNumber(l[i]) - 1 - chiffresNumber)) / rhv).toInt())
+            minusChiffre += (rhv * (((l[i] / 10.0.pow(digitNumber(l[i]) - 1 - chiffresNumber)) / rhv).toInt()))
         } else {
             if (i > 1) chiffresNumber = 1
             if (newDevided[i - 1] / 10.0.pow(
@@ -618,14 +618,13 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
             ) chiffresNumber = -1
             if (rhv == 1) chiffresNumber = -1
             for (char in 0 until lhv.toString().length) if (lhv.toString()[char] == '0') zeroPosition = char
-            if ((digitNumber(k) > digitNumber(l) + 1) && i == zeroPosition) chiffresNumber = -2
-            if ((l / (10.0.pow(digitNumber(l) - chiffresNumber)).toInt()) != digitNumber(rhv)) chiffresNumber++
-            newDevided += (l / (10.0.pow(digitNumber(l) - 1 - chiffresNumber)).toInt())
-            devisionResult.append(((l / 10.0.pow(digitNumber(l) - 1 - chiffresNumber)) / rhv).toInt())
-            minusChiffre += (rhv * ((l / 10.0.pow(digitNumber(l) - 1 - chiffresNumber)) / rhv).toInt())
+            if ((digitNumber(l[i - 1]) > digitNumber(l[i]) + 1) && i == zeroPosition) chiffresNumber = -2
+            if ((l[i] / (10.0.pow(digitNumber(l[i]) - chiffresNumber)).toInt()) != digitNumber(rhv)) chiffresNumber++
+            newDevided += (l[i] / (10.0.pow(digitNumber(l[i]) - 1 - chiffresNumber)).toInt())
+            devisionResult.append(((l[i] / 10.0.pow(digitNumber(l[i]) - 1 - chiffresNumber)) / rhv).toInt())
+            minusChiffre += (rhv * ((l[i] / 10.0.pow(digitNumber(l[i]) - 1 - chiffresNumber)) / rhv).toInt())
         }
-        k = l
-        l -= (minusChiffre[i] * 10.0.pow((digitNumber(l) - digitNumber(minusChiffre[i])).toDouble())).toInt()
+        l.add(l[i] - (minusChiffre[i] * 10.0.pow((digitNumber(l[i]) - digitNumber(minusChiffre[i])).toDouble())).toInt())
         i++
         devisionGrower = devisionResult.toString()
     }
@@ -663,15 +662,16 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
                 writer.write("$devisionResult\n${"-".repeat(digitNumber(minusChiffre[i]) + 1)}\n")
                 odds = lhv - minusChiffre[i]
             } else {
-                devisionGrower = if ((i != 0) && ((minusChiffre[0] == (lhv / 10.0.pow(
-                        digitNumber(lhv) - digitNumber(minusChiffre[0])
-                    )).toInt()))
+                devisionGrower = if (minusChiffre[i - 1] == newDevided[i - 1].toString()
+                        .slice(0..digitNumber(minusChiffre[i - 1]) - 1).toInt()
                 ) "0"
-                else if ((i == 0) && (minusChiffre[i] == devisionResult.toString().toInt())) "0"
                 else ""
-                val spaceDevisionGrower =
-                    if (devisionGrower != "0") digitNumber(minusChiffre[i - 1]) + 2 * (i - 1) else
-                        digitNumber(minusChiffre[i - 1]) + i - 1
+                var spaceDevisionGrower = spaces + digitNumber(lhv) - digitNumber(
+                    l[i - 1] - minusChiffre[i - 1] * 10.0.pow(
+                        (digitNumber(l[i - 1]) - digitNumber(minusChiffre[i - 1]))
+                    ).toInt()
+                ) - devisionGrower.length
+                if (newDevided[i] == 0) spaceDevisionGrower -= 1
                 val allSpaces = if (devisionGrower != "0") spaceDevisionGrower + digitNumber(newDevided[i]) - 1 -
                         digitNumber(minusChiffre[i]) else digitNumber(minusChiffre[i - 1]) + i - 1
                 writer.write("${" ".repeat(spaceDevisionGrower)}$devisionGrower")
@@ -685,4 +685,5 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
         else writer.write("${" ".repeat(digitNumber(lhv) - 1)} $odds")
     }
 }
+
 
