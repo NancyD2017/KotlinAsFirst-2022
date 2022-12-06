@@ -625,12 +625,7 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
     val times = digitNumber(divisionResult)
     var i = 0
     writer.use {
-        val spaces = if (((lhv / 10.0.pow(digitNumber(lhv) - 1)).toInt() == (minusChiffre[0] / 10.0.pow(
-                digitNumber(minusChiffre[0]) - 1
-            )).toInt()) || (minusChiffre[0] == 0 && digitNumber(lhv) < 2) ||
-            (minusChiffre[0] < 9 && minusChiffre[0] < (lhv / 10.0.pow(digitNumber(lhv) - 1)).toInt()) &&
-            minusChiffre[0] != 0
-        )
+        val spaces = if (digitNumber(divisionResult) - 1 + digitNumber(minusChiffre[0]) == digitNumber(lhv))
             1 else 0
         writer.write("${" ".repeat(spaces)}$lhv | $rhv\n")
         firstLen = ("${" ".repeat(spaces)}$lhv | ").length
