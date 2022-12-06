@@ -2,7 +2,6 @@
 
 package lesson7.task1
 
-import lesson2.task2.isNumberHappy
 import java.io.File
 import java.io.FileWriter
 import java.lang.StringBuilder
@@ -593,58 +592,38 @@ fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
  */
 fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
     val writer = FileWriter(outputName)
-    val l = mutableListOf<Int>()
-    l.add(lhv)
-    var i = 0                               //благодаря ей из l вычитаются делимые (нужна для определения степени)
-    val devisionResult = StringBuilder()
-    val minusChiffre = mutableListOf<Int>() //помогает найти число, кратное каждой из цифр в devisionResult и < lhv
-    val newDevided = mutableListOf<Int>()   //помогает найти число для последующего его деления на rhv
-    var devisionGrower = "0"       //помогает проверить, что devisionResult найден правильно и нужно выйти из цикла
-    var odds = 0
-    var zeroPosition = -1
-    while ((devisionGrower.toInt() + 1) * rhv < lhv) {
-        var chiffresNumber = 0     //помогает найти число, которое больше rhv (из lhv) и => которое будет потом делиться
-        if (i == 0) {
-            while (((l[i] / 10.0.pow(digitNumber(l[i]) - 1 - chiffresNumber)) / rhv) < 1) chiffresNumber++
-            newDevided += l[i]
-            devisionResult.append(((l[i] / 10.0.pow(digitNumber(l[i]) - 1 - chiffresNumber)) / rhv).toInt())
-            minusChiffre += (rhv * (((l[i] / 10.0.pow(digitNumber(l[i]) - 1 - chiffresNumber)) / rhv).toInt()))
+    val divisionResult = lhv / rhv
+    val newDivisionResult = mutableListOf<String>()
+    newDivisionResult += divisionResult.toString()
+    val newLhv = mutableListOf<Int>()
+    newLhv.add(lhv)
+    val newDivided = mutableListOf<String>()
+    val minusChiffre = mutableListOf<Int>()
+    val spaceNewDivided = mutableListOf<Int>()
+    val allSpaces = mutableListOf<Int>()
+    var firstLen = 0
+    for (j in 0 until digitNumber(divisionResult)) {
+        if ((digitNumber(lhv) == digitNumber(divisionResult)) || (j != 0)) {
+            minusChiffre += newDivisionResult[j].toInt() / 10.0.pow(newDivisionResult[j].length - 1).toInt() * rhv
+            if (j == 0) newDivided += lhv.toString()
+            else if (newDivided[j - 1].toInt().toString()
+                    .slice(0..digitNumber(minusChiffre[j - 1]) - 1) != minusChiffre[j - 1].toString()
+            ) newDivided += (newLhv[j] / 10.0.pow(newDivisionResult[j].length - 1)
+                .toInt()).toString() else newDivided += "0${
+                (newLhv[j] / 10.0.pow(newDivisionResult[j].length - 1).toInt())
+            }"
+            newLhv += (newLhv[j] - minusChiffre[j] * 10.0.pow(digitNumber(newLhv[j]) - digitNumber(minusChiffre[j]))
+                .toInt())
         } else {
-            if (i > 1) chiffresNumber = 1
-            if (newDevided[i - 1] / 10.0.pow(
-                    digitNumber(newDevided[i - 1]) -
-                            digitNumber(minusChiffre[i - 1])
-                ).toInt() == minusChiffre[i - 1]
-            ) chiffresNumber = -1
-            if (rhv == 1) chiffresNumber = -1
-            for (char in 0 until lhv.toString().length) if (lhv.toString()[char] == '0') zeroPosition = char
-            if ((digitNumber(l[i - 1]) > digitNumber(l[i]) + 1) && i == zeroPosition) chiffresNumber = -2
-            if ((l[i] / (10.0.pow(digitNumber(l[i]) - chiffresNumber)).toInt()) != digitNumber(rhv)) chiffresNumber++
-            newDevided += (l[i] / (10.0.pow(digitNumber(l[i]) - 1 - chiffresNumber)).toInt())
-            devisionResult.append(((l[i] / 10.0.pow(digitNumber(l[i]) - 1 - chiffresNumber)) / rhv).toInt())
-            minusChiffre += (rhv * ((l[i] / 10.0.pow(digitNumber(l[i]) - 1 - chiffresNumber)) / rhv).toInt())
+            minusChiffre += divisionResult / 10.0.pow(digitNumber(divisionResult) - 1).toInt() * rhv
+            newDivided += lhv.toString()
+            newLhv += (newLhv[j] - minusChiffre[j] * 10.0.pow(digitNumber(newLhv[j]) - digitNumber(minusChiffre[j]))
+                .toInt())
         }
-        l.add(l[i] - (minusChiffre[i] * 10.0.pow((digitNumber(l[i]) - digitNumber(minusChiffre[i])).toDouble())).toInt())
-        i++
-        devisionGrower = devisionResult.toString()
+        newDivisionResult.add(newDivisionResult[j].slice(1..newDivisionResult[j].length - 1))
     }
-    if (lhv == rhv) {
-        devisionResult.append("1")
-        minusChiffre += lhv
-        odds = 0
-    } else if ((i == 0) && (lhv != 1)) {
-        devisionResult.append("0")
-        minusChiffre += 0
-        newDevided += lhv
-    } else if (lhv < rhv) {
-        devisionResult.append("0")
-        minusChiffre += 0
-        odds = lhv
-    }
-    val times =
-        if (i != 0) i else 1      //проверяет, сколько раз writer должен написать делимое, делитель, черту деления
-    i =
-        0       //теперь i служит для обозначения нужных цифр для вывода (1-я, 2-я..тройка - делимое, делитель, черта деления)
+    val times = digitNumber(divisionResult)
+    var i = 0
     writer.use {
         val spaces = if (((lhv / 10.0.pow(digitNumber(lhv) - 1)).toInt() == (minusChiffre[0] / 10.0.pow(
                 digitNumber(minusChiffre[0]) - 1
@@ -654,36 +633,32 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
         )
             1 else 0
         writer.write("${" ".repeat(spaces)}$lhv | $rhv\n")
-        val firstLen = ("${" ".repeat(spaces)}$lhv | ").length
+        firstLen = ("${" ".repeat(spaces)}$lhv | ").length
         while (i < times) {
             if (i == 0) {
                 writer.write("-${minusChiffre[i]}")
                 writer.write(" ".repeat(firstLen - 1 - digitNumber(minusChiffre[i])))
-                writer.write("$devisionResult\n${"-".repeat(digitNumber(minusChiffre[i]) + 1)}\n")
-                odds = lhv - minusChiffre[i]
+                writer.write("$divisionResult\n${"-".repeat(digitNumber(minusChiffre[i]) + 1)}\n")
             } else {
-                devisionGrower = if (minusChiffre[i - 1] == newDevided[i - 1].toString()
-                        .slice(0..digitNumber(minusChiffre[i - 1]) - 1).toInt()
-                ) "0"
-                else ""
-                var spaceDevisionGrower = spaces + digitNumber(lhv) - digitNumber(
-                    l[i - 1] - minusChiffre[i - 1] * 10.0.pow(
-                        (digitNumber(l[i - 1]) - digitNumber(minusChiffre[i - 1]))
-                    ).toInt()
-                ) - devisionGrower.length
-                if (newDevided[i] == 0) spaceDevisionGrower -= 1
-                val allSpaces = if (devisionGrower != "0") spaceDevisionGrower + digitNumber(newDevided[i]) - 1 -
-                        digitNumber(minusChiffre[i]) else digitNumber(minusChiffre[i - 1]) + i - 1
-                writer.write("${" ".repeat(spaceDevisionGrower)}$devisionGrower")
-                writer.write("${newDevided[i]}\n${" ".repeat(allSpaces)}-${minusChiffre[i]}\n")
-                writer.write("${" ".repeat(allSpaces)}${"-".repeat(digitNumber(minusChiffre[i]) + 1)}\n")
-                odds = newDevided[i] - minusChiffre[i]
+                spaceNewDivided += if (newDivided[i] != "00" && !newDivided[i].matches(Regex("""0\d+""")))
+                    spaces + digitNumber(lhv) - digitNumber(newLhv[i])
+                else if (newDivided[i].matches(Regex("""0\d+""")) && spaceNewDivided.size > 0)
+                    spaceNewDivided[i - 2] + 1 else if (newDivided[i].matches(Regex("""0\d+"""))
+                    && spaceNewDivided.size == 0
+                ) spaces + digitNumber(minusChiffre[i - 1]) - 1 else spaceNewDivided[i - 2] + 1
+                allSpaces += if (digitNumber(minusChiffre[i]) < newDivided[i].length) spaceNewDivided[i - 1]
+                else spaceNewDivided[i - 1] - 1
+                writer.write("${" ".repeat(spaceNewDivided[i - 1])}${newDivided[i]}\n")
+                writer.write("${" ".repeat(allSpaces[i - 1])}-${minusChiffre[i]}\n")
+                writer.write("${" ".repeat(allSpaces[i - 1])}${"-".repeat(digitNumber(minusChiffre[i]) + 1)}\n")
             }
             i++
         }
+        val odds = lhv - rhv * divisionResult
         if (lhv != 1) writer.write("${" ".repeat(firstLen - 3 - digitNumber(odds))}$odds")
         else writer.write("${" ".repeat(digitNumber(lhv) - 1)} $odds")
     }
 }
+
 
 
