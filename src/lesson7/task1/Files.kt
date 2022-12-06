@@ -631,9 +631,14 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
         firstLen = ("${" ".repeat(spaces)}$lhv | ").length
         while (i < times) {
             if (i == 0) {
-                writer.write("-${minusChiffre[i]}")
-                writer.write(" ".repeat(firstLen - 1 - digitNumber(minusChiffre[i])))
-                writer.write("$divisionResult\n${"-".repeat(digitNumber(minusChiffre[i]) + 1)}\n")
+                if (minusChiffre[0] == 0 && digitNumber(lhv) > 2) {
+                    writer.write("${" ".repeat(digitNumber(lhv) - 2)}-${minusChiffre[i]}   ")
+                    writer.write("$divisionResult\n${"-".repeat(digitNumber(lhv))}\n")
+                } else {
+                    writer.write("-${minusChiffre[i]}")
+                    writer.write(" ".repeat(firstLen - 1 - digitNumber(minusChiffre[i])))
+                    writer.write("$divisionResult\n${"-".repeat(digitNumber(minusChiffre[i]) + 1)}\n")
+                }
             } else {
                 spaceNewDivided += if (newDivided[i] != "00" && !newDivided[i].matches(Regex("""0\d+""")))
                     spaces + digitNumber(lhv) - digitNumber(newLhv[i])
