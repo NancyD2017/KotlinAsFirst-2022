@@ -644,8 +644,23 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
                 allSpaces += if (digitNumber(minusChiffre[i]) < newDivided[i].length) spaceNewDivided[i - 1]
                 else spaceNewDivided[i - 1] - 1
                 writer.write("${" ".repeat(spaceNewDivided[i - 1])}${newDivided[i]}\n")
-                writer.write("${" ".repeat(allSpaces[i - 1])}-${minusChiffre[i]}\n")
-                writer.write("${" ".repeat(allSpaces[i - 1])}${"-".repeat(digitNumber(minusChiffre[i]) + 1)}\n")
+                if (minusChiffre[i] == 0 && newDivided[i].toInt() > 0) writer.write(
+                    "${
+                        " ".repeat
+                            (allSpaces[i - 1] + newDivided[i].length - 2)
+                    }-${minusChiffre[i]}\n"
+                )
+                else writer.write("${" ".repeat(allSpaces[i - 1])}-${minusChiffre[i]}\n")
+                writer.write(
+                    "${" ".repeat(allSpaces[i - 1])}${
+                        "-".repeat(
+                            maxOf(
+                                digitNumber(minusChiffre[i]) + 1,
+                                newDivided[i].length
+                            )
+                        )
+                    }\n"
+                )
             }
             i++
         }
