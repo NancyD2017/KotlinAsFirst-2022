@@ -4,6 +4,7 @@ package lesson5.task1
 
 import ru.spbstu.wheels.sorted
 import java.lang.StringBuilder
+import kotlin.math.max
 
 // Урок 5: ассоциативные массивы и множества
 // Максимальное количество баллов = 14
@@ -383,4 +384,24 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
  *     450
  *   ) -> emptySet()
  */
-fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> = TODO()
+fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
+    val possibleCapacities = treasures.map { it.value.first }
+    val prices = treasures.map { it.value.second }
+    val graph = MutableList(possibleCapacities.size + 1) { MutableList(capacity + 1) { 0 } }
+    for (i in 0 until possibleCapacities.size) {
+        for (j in 0 until capacity + 1) {
+            if (i > 0) if (possibleCapacities[i - 1] > j) {
+                graph[i][j] = graph[i - 1][j]
+            } else graph[i][j] = max(graph[i - 1][j - possibleCapacities[i - 1]] + prices[i], graph[i - 1][j])
+        }
+    }
+    println(graph)
+    val result = mutableSetOf<String>()
+    for (l in 1 until capacity) {
+        if (graph[possibleCapacities.size][l] != graph[possibleCapacities.size][l - 1]) {
+            for ((item, values) in treasures)
+                if (Pair(l, graph[possibleCapacities.size][l]) == values) result += item
+        }
+    }
+    return result
+}

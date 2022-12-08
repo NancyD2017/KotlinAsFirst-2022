@@ -603,7 +603,7 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
     val allSpaces = mutableListOf<Int>()
     var firstLen = 0
     for (j in 0 until digitNumber(divisionResult)) {
-        if ((digitNumber(lhv) == digitNumber(divisionResult)) || (j != 0)) {
+        if (j != 0) {
             minusChiffre += newDivisionResult[j].toInt() / 10.0.pow(newDivisionResult[j].length - 1).toInt() * rhv
             if (j == 0) newDivided += lhv.toString()
             else if (newDivided[j - 1].toInt().toString()
