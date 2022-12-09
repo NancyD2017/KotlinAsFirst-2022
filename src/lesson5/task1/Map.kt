@@ -2,8 +2,9 @@
 
 package lesson5.task1
 
+import ru.spbstu.wheels.sorted
 import java.lang.StringBuilder
-import kotlin.math.pow
+import kotlin.math.max
 
 // Урок 5: ассоциативные массивы и множества
 // Максимальное количество баллов = 14
@@ -102,7 +103,7 @@ fun buildWordSet(text: List<String>): MutableSet<String> {
 fun buildGrades(grades: Map<String, Int>): Map<Int, List<String>> {
     val newGrades = mutableMapOf<Int, MutableList<String>>()
     for ((key, value) in grades) {
-        if (newGrades[value] == null) newGrades[value] = mutableListOf(key)
+        if (value !in newGrades.keys) newGrades.getOrPut(value) { mutableListOf(key) }
         else newGrades[value]!!.add(key)
     }
     return newGrades
@@ -185,23 +186,8 @@ fun mergePhoneBooks(mapA: Map<String, String>, mapB: Map<String, String>): Map<S
  *   averageStockPrice(listOf("MSFT" to 100.0, "MSFT" to 200.0, "NFLX" to 40.0))
  *     -> mapOf("MSFT" to 150.0, "NFLX" to 40.0)
  */
-fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Double> {
-    val newPrices = mutableMapOf<String, Double>()
-    val groupedStockPrice = stockPrices.groupBy { it.first }.mapValues { it.value }
-    for ((name, groups) in groupedStockPrice) {
-        var price: Double
-        for (each in groups) {
-            if (name !in newPrices) newPrices[name] = each.second
-            else {
-                price = newPrices[name]!!
-                newPrices[name] = each.second + price
-            }
-        }
-        price = newPrices.get(name)!!
-        newPrices[name] = price / groups.size
-    }
-    return newPrices
-}
+fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Double> =
+    stockPrices.groupBy({ it.first }, { it.second }).mapValues { it.value.sum() / it.value.size }
 
 /**
  * Средняя (4 балла)
@@ -245,8 +231,10 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *   canBuildFrom(listOf('a', 'b', 'o'), "baobab") -> true
  */
 fun canBuildFrom(chars: List<Char>, word: String): Boolean {
-    val symbol = word.toList()
-    return chars.containsAll(symbol)
+    val symbol = word.lowercase().toSet()
+    val c = mutableSetOf<Char>()
+    for (i in chars) c += i.lowercaseChar()
+    return c.containsAll(symbol)
 }
 
 /**
@@ -333,9 +321,8 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
         val newFriends = mapFriends.toMutableMap()
         for ((person, mates) in mapFriends) {
             for (friend in mates) {
-                if (newFriends[friend].isNullOrEmpty()) {
-                    if (friend.isNotBlank()) newFriends[friend] = mutableSetOf()
-                } else {
+                if (newFriends[friend] == null) newFriends[friend] = mutableSetOf()
+                else {
                     val newF = newFriends[friend]!!
                     newFriends[person] = (newFriends[person]!! + newF - person).toMutableSet()
                 }
@@ -365,10 +352,13 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
  *   findSumOfTwo(listOf(1, 2, 3), 6) -> Pair(-1, -1)
  */
 fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
-    for (i in 0 until list.size) {
-        var index = -1
-        if (i != list.indexOf(number - list[i])) index = list.indexOf(number - list[i])
-        if (index != -1) return Pair(i, index)
+    val goodPair = mutableMapOf<Int, Int>()
+    for (i in 0 until list.size) goodPair[list[i]] = i
+    println(goodPair)
+    for ((chiffre, position) in list.withIndex()) {
+        if ((number - position in goodPair) && (goodPair[number - position] != chiffre)) {
+            return Pair(goodPair[number - position]!!, chiffre).sorted()
+        }
     }
     return Pair(-1, -1)
 }
@@ -394,4 +384,32 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
  *     450
  *   ) -> emptySet()
  */
-fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> = TODO()
+fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
+    val possibleCapacities = treasures.map { it.value.first }
+    val prices = treasures.map { it.value.second }
+    val graph = MutableList(possibleCapacities.size + 1) { MutableList(capacity + 1) { 0 } }
+    for (i in 0 until possibleCapacities.size + 1) {
+        for (j in 0 until capacity + 1) {
+            if (i > 0) if (possibleCapacities[i - 1] > j) {
+                graph[i][j] = graph[i - 1][j]
+            } else graph[i][j] = max(graph[i - 1][j - possibleCapacities[i - 1]] + prices[i - 1], graph[i - 1][j])
+        }
+    }
+    val toTake = mutableSetOf<String>()
+    var taken = 0
+    var placeLeft = capacity
+    for ((item, values) in treasures) {
+        for (i in possibleCapacities.size downTo 1) {
+            if (graph[i][capacity] != graph[i - 1][capacity] && (graph[i][capacity] == values.second + placeLeft || graph[i][capacity] == values.second) && placeLeft > 0) {
+                toTake += item
+                placeLeft -= i
+                taken += values.second
+            } else if (graph[i][capacity] != graph[i - 1][capacity] && graph[i][capacity] == values.second && placeLeft <= 0 && taken < values.second) {
+                toTake.clear()
+                toTake += item
+                placeLeft = capacity - i
+            }
+        }
+    }
+    return toTake
+}
