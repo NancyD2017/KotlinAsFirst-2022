@@ -385,25 +385,24 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
  *   ) -> emptySet()
  */
 fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
-    val possibleCapacities = treasures.map { it.value.first }
+    val items = treasures.map { it.key }
+    val takenSpace = treasures.map { it.value.first }
     val prices = treasures.map { it.value.second }
-    val graph = MutableList(possibleCapacities.size + 1) { MutableList(capacity + 1) { 0 } }
-    for (i in 0 until possibleCapacities.size + 1) {
+    val graph = MutableList(takenSpace.size + 1) { MutableList(capacity + 1) { 0 } }
+    for (i in 0 until takenSpace.size + 1) {
         for (j in 0 until capacity + 1) {
-            if (i > 0) if (possibleCapacities[i - 1] > j) {
+            if (i > 0) if (takenSpace[i - 1] > j) {
                 graph[i][j] = graph[i - 1][j]
-            } else graph[i][j] = max(graph[i - 1][j - possibleCapacities[i - 1]] + prices[i - 1], graph[i - 1][j])
+            } else graph[i][j] = max(graph[i - 1][j - takenSpace[i - 1]] + prices[i - 1], graph[i - 1][j])
         }
     }
-    val result = mutableSetOf<String>()
+    val toTake = mutableSetOf<String>()
     var placeLeft = capacity
-    for ((item, values) in treasures) for (l in 0 until placeLeft) {
-        if (graph[possibleCapacities.size - 1][l] != graph[possibleCapacities.size][l + 1]) {
-            if (item !in result && values.first <= placeLeft) {
-                result += item
-                placeLeft -= values.first
-            }
+    for (i in treasures.size downTo 1) {
+        if (graph[i][placeLeft] != graph[i - 1][placeLeft]) {
+            toTake += items[i - 1]
+            placeLeft -= takenSpace[i - 1]
         }
     }
-    return result
+    return toTake
 }
