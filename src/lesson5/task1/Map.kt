@@ -396,8 +396,8 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
         }
     }
     val toTake = mutableSetOf<String>()
-    var taken = 0
     var placeLeft = capacity
+    var taken = 0
     for ((item, values) in treasures) {
         for (i in possibleCapacities.size downTo 1) {
             if (graph[i][capacity] != graph[i - 1][capacity] && (graph[i][capacity] == values.second + placeLeft || graph[i][capacity] == values.second) && placeLeft > 0) {
