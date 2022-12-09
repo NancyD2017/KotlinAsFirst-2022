@@ -387,7 +387,10 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
 fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
     val possibleCapacities = treasures.map { it.value.first }
     val prices = treasures.map { it.value.second }
-    val graph = MutableList(possibleCapacities.size + 1) { MutableList(capacity + 1) { 0 } }
+    val graph = MutableList(possibleCapacities.size + 1) {
+        MutableList(capacity + 1)
+        { 0 }
+    }
     for (i in 0 until possibleCapacities.size + 1) {
         for (j in 0 until capacity + 1) {
             if (i > 0) if (possibleCapacities[i - 1] > j) {
@@ -400,14 +403,19 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
     var taken = 0
     for ((item, values) in treasures) {
         for (i in possibleCapacities.size downTo 1) {
-            if (graph[i][capacity] != graph[i - 1][capacity] && (graph[i][capacity] == values.second + placeLeft || graph[i][capacity] == values.second) && placeLeft > 0) {
+            if (graph[i][capacity] != graph[i - 1][capacity] && (graph[i][capacity] == values.second + placeLeft ||
+                        graph[i][capacity] == values.second) && placeLeft > 0 && item !in toTake
+            ) {
                 toTake += item
-                placeLeft -= i
+                placeLeft -= values.first
                 taken += values.second
-            } else if (graph[i][capacity] != graph[i - 1][capacity] && graph[i][capacity] == values.second && placeLeft <= 0 && taken < values.second) {
+            } else if (graph[i][capacity] != graph[i - 1][capacity] && (graph[i][capacity] == values.second + placeLeft
+                        || graph[i][capacity] == values.second) && placeLeft <= 0 && taken < values.second &&
+                item !in toTake
+            ) {
                 toTake.clear()
                 toTake += item
-                placeLeft = capacity - i
+                placeLeft = capacity - values.first
             }
         }
     }
