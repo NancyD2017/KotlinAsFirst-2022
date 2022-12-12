@@ -213,17 +213,18 @@ fun alignFileByWidth(inputName: String, outputName: String) {
         }
         newLine = newLine.trim()
         if (newLine.length > maxLen) maxLen = newLine.length
-        text.add("$newLine\n")
+        text.add(newLine)
         for (element in newLine) if (element == ' ') spacesCount++
         newLine = String()
         spaceCountByLineList.add(spacesCount)
         spacesCount = 0
     }
+    println(text)
     writer.use {
         for (line in 0 until text.size) {
             if (text[line].trim().length < maxLen) {
                 var spacesLeft =
-                    maxLen - text[line].length + 1  //считает недостаток пробелов в строке, "1" появляется за счёт \n
+                    maxLen - text[line].length  //считает недостаток пробелов в строке
                 spacesCount = spaceCountByLineList[line]   //считает недостающее количество пробелов для каждой из строк
                 val spacesNumber =
                     if (spacesCount > 0) spacesLeft / spacesCount else 0 //считает, на сколько пробелов нужно заменить каждый из пробелов
@@ -238,11 +239,14 @@ fun alignFileByWidth(inputName: String, outputName: String) {
                             spacesLeft -= spacesNumber                                 //пробел который был
                             spacesCount -= 1
                         }
-                    } else if ((text[line][i] == ' ') && (spacesLeft == 0)) {
-                        writer.write(" ")                                       //оставляет по 1 пробелу, когда это нужно
-                    } else writer.write(text[line][i].toString())                  //или записывает непробельный символ line[i]
+                    } else if ((text[line][i] == ' ') && (spacesLeft == 0)) writer.write(" ") //оставляет по 1 пробелу, когда это нужно
+                    else writer.write(text[line][i].toString())                   //или записывает непробельный символ line[i]
                 }
-            } else writer.write(text[line])                       //если у строки maxLen то она не изменяется
+                writer.write(System.lineSeparator())
+            } else {
+                writer.write(text[line])
+                writer.write(System.lineSeparator())
+            }                       //если у строки maxLen то она не изменяется
         }
     }
 }
@@ -548,23 +552,24 @@ fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
     val writer = FileWriter(outputName)
     val digitNumberLR = digitNumber(rhv * lhv)
     writer.use {
-        writer.write("${" ".repeat(digitNumberLR - digitNumber(lhv) + 1)}$lhv\n*")
-        writer.write("${" ".repeat(digitNumberLR - digitNumber(rhv))}$rhv\n")
-        writer.write("${"-".repeat(digitNumberLR + 1)}\n")
+        writer.write("${" ".repeat(digitNumberLR - digitNumber(lhv) + 1)}$lhv")
+        writer.write(System.lineSeparator())
+        writer.write("*${" ".repeat(digitNumberLR - digitNumber(rhv))}$rhv")
+        writer.write(System.lineSeparator())
+        writer.write("-".repeat(digitNumberLR + 1))
+        writer.write(System.lineSeparator())
         var i = 0
         var r = rhv
         while (i < digitNumber(rhv)) {
-            if (i == 0) {
-                writer.write(" ".repeat((digitNumberLR + 1) - digitNumber((r % 10) * lhv)))
-                writer.write("${(r % 10) * lhv}\n")
-            } else {
-                writer.write("+${" ".repeat(digitNumberLR - digitNumber((r % 10) * lhv) - i)}")
-                writer.write("${(r % 10) * lhv}\n")
-            }
+            if (i == 0) writer.write(" ".repeat((digitNumberLR + 1) - digitNumber((r % 10) * lhv)))
+            else writer.write("+${" ".repeat(digitNumberLR - digitNumber((r % 10) * lhv) - i)}")
+            writer.write("${(r % 10) * lhv}")
+            writer.write(System.lineSeparator())
             r /= 10
             i++
         }
-        writer.write("${"-".repeat(digitNumberLR + 1)}\n")
+        writer.write("-".repeat(digitNumberLR + 1))
+        writer.write(System.lineSeparator())
         writer.write(" ${lhv * rhv}")
     }
 }
@@ -593,87 +598,91 @@ fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
 fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
     val writer = FileWriter(outputName)
     val divisionResult = lhv / rhv
-    val newDivisionResult = mutableListOf<String>()
-    newDivisionResult += divisionResult.toString()
-    val newLhv = mutableListOf<Int>()
+    var newDivisionResult = divisionResult.toString() //отщипляет от divisionResult по одной цифре слева в цикле
+    val newLhv = mutableListOf<Int>()         //отнимает от lhv minusChiffre, но не убирает остаток
     newLhv.add(lhv)
-    val newDivided = mutableListOf<String>()
-    val minusChiffre = mutableListOf<Int>()
-    val spaceNewDivided = mutableListOf<Int>()
-    val allSpaces = mutableListOf<Int>()
-    var firstLen = 0
+    val newDivided =
+        mutableListOf<String>() //вычисляет новое число (с помощью операций над newLhv) которое потом будет делиться
+    val minusChiffre =
+        mutableListOf<Int>()    //это целое число, меньшее или равное newDivided, которое делится бе остатка на соответствующую цифру из newDivisionResult
+    val spaceNewDivided = mutableListOf<Int>() //рассчитывает пробелы перед newDivided
+    val allSpaces = mutableListOf<Int>()       //рассчитывает пробелы перед --- и minusChiffre
+    //здесь и ниже (до переменной times) происходит нахождение новой newDivided, minusChiffre, newLhv,
+    // то есть, всех цифр, которые есть в процессе
     for (j in 0 until digitNumber(divisionResult)) {
+        val power =
+            newDivisionResult.length - 1  //рассчитывает степень для рассчета minusChiffre, newDivided, а также помогает избавиться от лишнего в newDivisionResult
         if (j != 0) {
-            minusChiffre += newDivisionResult[j].toInt() / 10.0.pow(newDivisionResult[j].length - 1).toInt() * rhv
-            if (j == 0) newDivided += lhv.toString()
-            else if (newDivided[j - 1].toInt().toString()
-                    .slice(0..digitNumber(minusChiffre[j - 1]) - 1) != minusChiffre[j - 1].toString()
-            ) newDivided += (newLhv[j] / 10.0.pow(newDivisionResult[j].length - 1)
-                .toInt()).toString() else newDivided += "0${
-                (newLhv[j] / 10.0.pow(newDivisionResult[j].length - 1).toInt())
-            }"
-            newLhv += (newLhv[j] - minusChiffre[j] * 10.0.pow(digitNumber(newLhv[j]) - digitNumber(minusChiffre[j]))
-                .toInt())
+            minusChiffre += newDivisionResult.toInt() / 10.0.pow(power).toInt() * rhv
+            newDivided += if (newDivided[j - 1].toInt().toString()
+                    .slice(0 until digitNumber(minusChiffre[j - 1])) != minusChiffre[j - 1].toString()
+            ) { //необходимо наличие проверки j!=0, тк
+                (newLhv[j] / 10.0.pow(power)
+                    .toInt()).toString()    //в самый первый раз происходят преобразования над lhv что, соответственно, меняет процесс вычисления остальных переменых
+            } else "0${(newLhv[j] / 10.0.pow(power).toInt())}"
         } else {
             minusChiffre += divisionResult / 10.0.pow(digitNumber(divisionResult) - 1).toInt() * rhv
             newDivided += lhv.toString()
-            newLhv += (newLhv[j] - minusChiffre[j] * 10.0.pow(digitNumber(newLhv[j]) - digitNumber(minusChiffre[j]))
-                .toInt())
         }
-        newDivisionResult.add(newDivisionResult[j].slice(1..newDivisionResult[j].length - 1))
+        newDivisionResult = newDivisionResult.slice(1..power)
+        newLhv += (newLhv[j] - minusChiffre[j] * 10.0.pow(digitNumber(newLhv[j]) - digitNumber(minusChiffre[j]))
+            .toInt())
     }
-    val times = digitNumber(divisionResult)
+    //здесь и ниже (до переменной odds) происходит печать процесса деления
+    val times =
+        digitNumber(divisionResult) //это количество раз, когда напишутся соответствующие newDivided, minussChiffre, "-"
     var i = 0
     writer.use {
-        val spaces = if (digitNumber(divisionResult) - 1 + digitNumber(minusChiffre[0]) == digitNumber(lhv))
-            1 else 0
-        writer.write("${" ".repeat(spaces)}$lhv | $rhv\n")
-        firstLen = ("${" ".repeat(spaces)}$lhv | ").length
+        val spaces =
+            if (digitNumber(divisionResult) - 1 + digitNumber(minusChiffre[0]) == digitNumber(lhv))      //рассчитывает пробелы перед lhv в самый первый раз
+                1 else 0
+        writer.write("${" ".repeat(spaces)}$lhv | $rhv${System.lineSeparator()}")
+        val firstLen =
+            ("${" ".repeat(spaces)}$lhv | ").length //рассчитывает длину первой строки без rhv, также нужна для подсчета пробелов
         while (i < times) {
-            if (i == 0) {
-                if (minusChiffre[0] == 0 && digitNumber(lhv) > 2) {
-                    writer.write("${" ".repeat(digitNumber(lhv) - 2)}-${minusChiffre[i]}   ")
-                    writer.write("$divisionResult\n${"-".repeat(digitNumber(lhv))}\n")
+            if (i == 0) {                                                                                             //для второй и третей строк вывода написание отличается от последующих
+                if (minusChiffre[0] == 0 && digitNumber(lhv) > 2) {                                                   //необходима проверка, тк от нее зависит количество "-" и пробелов
+                    writer.write("${" ".repeat(digitNumber(lhv) - 2)}-${minusChiffre[i]}   $divisionResult")
+                    writer.write("${System.lineSeparator()}${"-".repeat(digitNumber(lhv))}${System.lineSeparator()}")
                 } else {
-                    writer.write("-${minusChiffre[i]}")
-                    writer.write(" ".repeat(firstLen - 1 - digitNumber(minusChiffre[i])))
-                    writer.write("$divisionResult\n${"-".repeat(digitNumber(minusChiffre[i]) + 1)}\n")
+                    writer.write("-${minusChiffre[i]}${" ".repeat(firstLen - 1 - digitNumber(minusChiffre[i]))}")
+                    writer.write("$divisionResult${System.lineSeparator()}")
+                    writer.write("${"-".repeat(digitNumber(minusChiffre[i]) + 1)}${System.lineSeparator()}")
                 }
             } else {
-                spaceNewDivided += if (newDivided[i] != "00" && !newDivided[i].matches(Regex("""0\d+""")))
+                spaceNewDivided += if (newDivided[i] != "00" && !newDivided[i].matches(Regex("""0\d+"""))) {   //рассчитывает пробелы перед newDivided
                     spaces + digitNumber(lhv) - digitNumber(newLhv[i])
-                else if (newDivided[i].matches(Regex("""0\d+""")) && spaceNewDivided.size > 0)
-                    spaceNewDivided[i - 2] + 1 else if (newDivided[i].matches(Regex("""0\d+"""))
-                    && spaceNewDivided.size == 0
-                ) spaces + digitNumber(minusChiffre[i - 1]) - 1 else spaceNewDivided[i - 2] + 1
-                allSpaces += if (digitNumber(minusChiffre[i]) < newDivided[i].length) spaceNewDivided[i - 1]
-                else spaceNewDivided[i - 1] - 1
-                writer.write("${" ".repeat(spaceNewDivided[i - 1])}${newDivided[i]}\n")
-                if (minusChiffre[i] == 0 && newDivided[i].toInt() > 0) writer.write(
-                    "${
-                        " ".repeat
-                            (allSpaces[i - 1] + newDivided[i].length - 2)
-                    }-${minusChiffre[i]}\n"
-                )
-                else writer.write("${" ".repeat(allSpaces[i - 1])}-${minusChiffre[i]}\n")
+                } else if (newDivided[i].matches(Regex("""0\d+""")) && spaceNewDivided.size > 0) {
+                    spaceNewDivided[i - 2] + 1
+                } else if (newDivided[i].matches(Regex("""0\d+""")) && spaceNewDivided.size == 0) {
+                    spaces + digitNumber(minusChiffre[i - 1]) - 1
+                } else spaceNewDivided[i - 2] + 1
+                allSpaces += if (digitNumber(minusChiffre[i]) < newDivided[i].length) {
+                    spaceNewDivided[i - 1]
+                } else spaceNewDivided[i - 1] - 1                                                                     //рассчитывает пробелы перед "-" и minusChiffre
+                writer.write("${" ".repeat(spaceNewDivided[i - 1])}${newDivided[i]}${System.lineSeparator()}")
+                if (minusChiffre[i] == 0 && newDivided[i].toInt() > 0) {
+                    writer.write("${" ".repeat(allSpaces[i - 1] + newDivided[i].length - 2)}-${minusChiffre[i]}")
+                    writer.write(System.lineSeparator())
+                } else {
+                    writer.write("${" ".repeat(allSpaces[i - 1])}-${minusChiffre[i]}${System.lineSeparator()}")
+                }
                 writer.write(
                     "${" ".repeat(allSpaces[i - 1])}${
                         "-".repeat(
-                            maxOf(
-                                digitNumber(minusChiffre[i]) + 1,
-                                newDivided[i].length
-                            )
+                            maxOf(digitNumber(minusChiffre[i]) + 1, newDivided[i].length)
                         )
-                    }\n"
+                    }${System.lineSeparator()}"
                 )
             }
             i++
         }
+        //вывод остатка с неоюходимым количестовом пробелов перед ним
         val odds = lhv - rhv * divisionResult
-        if (lhv != 1) writer.write("${" ".repeat(firstLen - 3 - digitNumber(odds))}$odds")
-        else writer.write("${" ".repeat(digitNumber(lhv) - 1)} $odds")
+        if (lhv != 1) {
+            writer.write("${" ".repeat(firstLen - 3 - digitNumber(odds))}$odds")
+        } else {
+            writer.write("${" ".repeat(digitNumber(lhv) - 1)} $odds")
+        }
     }
 }
-
-
-
