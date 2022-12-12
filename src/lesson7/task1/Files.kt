@@ -607,6 +607,8 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
         mutableListOf<Int>()    //это целое число, меньшее или равное newDivided, которое делится бе остатка на соответствующую цифру из newDivisionResult
     val spaceNewDivided = mutableListOf<Int>() //рассчитывает пробелы перед newDivided
     val allSpaces = mutableListOf<Int>()       //рассчитывает пробелы перед --- и minusChiffre
+    var spaces = 0
+    var isSpaceZero = true
     //здесь и ниже (до переменной times) происходит нахождение новой newDivided, minusChiffre, newLhv,
     // то есть, всех цифр, которые есть в процессе
     for (j in 0 until digitNumber(divisionResult)) {
@@ -614,28 +616,42 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
             newDivisionResult.length - 1  //рассчитывает степень для рассчета minusChiffre, newDivided, а также помогает избавиться от лишнего в newDivisionResult
         if (j != 0) {
             minusChiffre += newDivisionResult.toInt() / 10.0.pow(power).toInt() * rhv
-            newDivided += if (newDivided[j - 1].toInt().toString()
-                    .slice(0 until digitNumber(minusChiffre[j - 1])) != minusChiffre[j - 1].toString()
-            ) { //необходимо наличие проверки j!=0, тк
-                (newLhv[j] / 10.0.pow(power)
-                    .toInt()).toString()    //в самый первый раз происходят преобразования над lhv что, соответственно, меняет процесс вычисления остальных переменых
-            } else "0${(newLhv[j] / 10.0.pow(power).toInt())}"
+            newDivided += if (isSpaceZero) {
+                if (newDivided[j - 1].toInt().toString()
+                        .slice(0 until digitNumber(minusChiffre[j - 1])) != minusChiffre[j - 1].toString()
+                ) {
+                    (newLhv[j] / 10.0.pow(power).toInt()).toString()
+                } else "0${(newLhv[j] / 10.0.pow(power).toInt())}"
+            } else {
+                if (newDivided[j - 1].toInt().toString()
+                        .slice(0 until digitNumber(minusChiffre[j - 1])) != minusChiffre[j - 1].toString()
+                ) {
+                    (newLhv[j] / 10.0.pow(power).toInt()).toString()
+                } else "0${(newLhv[j] / 10.0.pow(power).toInt())}"
+            }
         } else {
             minusChiffre += divisionResult / 10.0.pow(digitNumber(divisionResult) - 1).toInt() * rhv
             newDivided += lhv.toString()
+            if (digitNumber(divisionResult) - 1 + digitNumber(minusChiffre[0]) == digitNumber(lhv)) {
+                spaces = 1 //рассчитывает пробелы перед lhv в самый первый раз
+                isSpaceZero = false
+            }
         }
         newDivisionResult = newDivisionResult.slice(1..power)
-        newLhv += (newLhv[j] - minusChiffre[j] * 10.0.pow(digitNumber(newLhv[j]) - digitNumber(minusChiffre[j]))
+        if (isSpaceZero) newLhv += (newLhv[j] - minusChiffre[j] * 10.0.pow(
+            digitNumber(newLhv[j]) - digitNumber(
+                minusChiffre[j]
+            ) - 1
+        ).toInt())
+        else newLhv += (newLhv[j] - minusChiffre[j] * 10.0.pow(digitNumber(newLhv[j]) - digitNumber(minusChiffre[j]))
             .toInt())
     }
+    println("$newDivided $minusChiffre $newLhv")
     //здесь и ниже (до переменной odds) происходит печать процесса деления
     val times =
         digitNumber(divisionResult) //это количество раз, когда напишутся соответствующие newDivided, minussChiffre, "-"
     var i = 0
     writer.use {
-        val spaces =
-            if (digitNumber(divisionResult) - 1 + digitNumber(minusChiffre[0]) == digitNumber(lhv))      //рассчитывает пробелы перед lhv в самый первый раз
-                1 else 0
         writer.write("${" ".repeat(spaces)}$lhv | $rhv${System.lineSeparator()}")
         val firstLen =
             ("${" ".repeat(spaces)}$lhv | ").length //рассчитывает длину первой строки без rhv, также нужна для подсчета пробелов

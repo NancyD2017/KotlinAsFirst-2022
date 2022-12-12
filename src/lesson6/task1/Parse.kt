@@ -311,7 +311,7 @@ fun fromRoman(roman: String): Int {
         if (!isSecondDigitUsed) {
             val power1 = roman1.indexOf(roman[i].toString()).toDouble()
             val power5 = roman5.indexOf(roman[i].toString()).toDouble()
-            if (i + 1 != roman.length) possibleNumber = (roman[i].toString() + roman[i + 1])
+            if (i + 1 != roman.length) possibleNumber = (roman[i].toString() + roman[i + 1]) else possibleNumber = ""
             when {
                 ((possibleNumber) in roman4) -> {
                     result += 4 * (10.0.pow(roman4.indexOf(possibleNumber).toDouble())).toInt()
